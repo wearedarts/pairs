@@ -1,13 +1,22 @@
 ## Pairs
 Matching pairs game
 
-### Serve to localhost
-`elm-live src/Main.elm --start-page=src/index.html --hot -- --output=dist/pairs.js`
+### Prerequisites
+Follow official install instructions for your setup:
+- [Elm](http://elm-lang.org/) 0.19
+- node
+- yarn
 
-### Compile
+### Development build
+- `yarn start` for a hot-reload dev server
 
-#### Development
-`elm make src/Main.elm --output=dist/pairs.js`
+### Tests
+- `yarn test`
 
-#### Production
-`elm make src/Main.elm --optimize --output=dist/pairs.js`
+### Production build
+- `yarn build`
+
+### Deployment
+- When a pull request is created against `main`, netlify builds a preview site
+- When code is merged into `main` it is deployed to [current release](https://darts-pairs.netlify.app)
+

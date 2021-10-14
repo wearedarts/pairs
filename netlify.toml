@@ -5,7 +5,7 @@
 
 [build]
   publish = "dist"
-  command = "export ELM_HOME=\"elm-stuff\" && cp src/index.html dist/ && elm make src/Main.elm --optimize --output=dist/pairs.js"
+  command = "export ELM_HOME=\"elm-stuff\" && yarn test && yarn build"
 
 [[plugins]]
   package = "netlify-plugin-cache"
