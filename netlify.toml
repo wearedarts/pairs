@@ -1,0 +1,13 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build]
+  publish = "dist"
+  command = "export ELM_HOME=\"elm-stuff\" && cp src/index.html dist/ && elm make src/Main.elm --optimize --output=pairs.js"
+
+[[plugins]]
+  package = "netlify-plugin-cache"
+    [plugins.inputs]
+      paths = ["elm-stuff"]
