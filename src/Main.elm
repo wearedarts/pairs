@@ -1,7 +1,8 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (..)
+import Card exposing (Card, Msg(..), initCardSet, renderCardList)
+import Html exposing (Html, div, h1, text)
 import Html.Events exposing (..)
 
 
@@ -20,27 +21,45 @@ main =
 
 
 type alias Model =
-    { }
+    { cards : List Card
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { }
+    ( { cards = initCardSet }
     , Cmd.none
     )
-
-
-type Msg
-    = DoAction
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DoAction ->
-            ( model
+        SelectedCard card ->
+            let
+                newCardState =
+                    List.map
+                        (\aCard ->
+                            if card == aCard then
+                                doFlip model aCard
+
+                            else
+                                aCard
+                        )
+                        model.cards
+            in
+            ( { model | cards = newCardState }
             , Cmd.none
             )
+
+
+doFlip : Model -> Card -> Card
+doFlip model card =
+    if not card.isFlipped then
+        { card | isFlipped = True }
+
+    else
+        card
 
 
 subscriptions : Model -> Sub Msg
@@ -57,9 +76,6 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ text "Pairs"
-        , Html.button
-            [ Html.Events.onClick DoAction
-            ]
-            [ text "Do action!" ]
+        [ h1 [] [ text "Find the Pairs" ]
+        , renderCardList model.cards
         ]
