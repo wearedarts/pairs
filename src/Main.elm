@@ -44,7 +44,7 @@ update msg model =
                                 showCard model aCard
 
                             else if
-                                flippedCardsIsEven (shownCards model.cards)
+                                cardsIsEven (revealedCards model.cards)
                                     && notMatched model.cards aCard
                             then
                                 hideCard model aCard
@@ -59,15 +59,15 @@ update msg model =
             )
 
 
-shownCards : List Card -> List Card
-shownCards allCards =
-    List.filter (\aCard -> aCard.isFlipped) allCards
+revealedCards : List Card -> List Card
+revealedCards allCards =
+    List.filter (\aCard -> aCard.isRevealed) allCards
 
 
 showCard : Model -> Card -> Card
 showCard model card =
-    if not card.isFlipped then
-        { card | isFlipped = True }
+    if not card.isRevealed then
+        { card | isRevealed = True }
 
     else
         card
@@ -75,24 +75,24 @@ showCard model card =
 
 hideCard : Model -> Card -> Card
 hideCard model card =
-    if card.isFlipped then
-        { card | isFlipped = False }
+    if card.isRevealed then
+        { card | isRevealed = False }
 
     else
         card
 
 
-flippedCardsIsEven : List Card -> Bool
-flippedCardsIsEven flippedCards =
-    List.length flippedCards
+cardsIsEven : List Card -> Bool
+cardsIsEven cards =
+    List.length cards
         /= 0
-        && modBy 2 (List.length flippedCards)
+        && modBy 2 (List.length cards)
         == 0
 
 
 notMatched : List Card -> Card -> Bool
 notMatched cards card =
-    (List.filter (\aCard -> aCard.isFlipped) cards
+    (List.filter (\aCard -> aCard.isRevealed) cards
         |> List.filter (\aCard -> aCard.value == card.match)
         |> List.length
     )
