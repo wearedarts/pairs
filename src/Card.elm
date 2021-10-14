@@ -8,7 +8,7 @@ import List
 type alias Card =
     { value : String
     , match : String
-    , isFlipped : Bool
+    , isRevealed : Bool
     }
 
 
@@ -18,15 +18,15 @@ type Msg
 
 cardPairs : List ( String, String )
 cardPairs =
-    [ ( "hello", "world" ), ( "play", "cards" ) ]
+    [ ( "azure", "blue" ), ( "red", "crimson" ), ( "green", "emerald" ) ]
 
 
 initCardSet : List Card
 initCardSet =
     List.map
         (\( aValue, aMatch ) ->
-            [ { value = aValue, match = aMatch, isFlipped = False }
-            , { value = aMatch, match = aValue, isFlipped = False }
+            [ { value = aValue, match = aMatch, isRevealed = False }
+            , { value = aMatch, match = aValue, isRevealed = False }
             ]
         )
         cardPairs
@@ -40,7 +40,7 @@ renderCardList cards =
             (\card ->
                 li []
                     [ button [ onClick (SelectedCard card) ]
-                        [ if card.isFlipped then
+                        [ if card.isRevealed then
                             text card.value
 
                           else
