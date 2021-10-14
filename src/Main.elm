@@ -41,7 +41,13 @@ update msg model =
                     List.map
                         (\aCard ->
                             if card == aCard then
-                                doFlip model aCard
+                                showCard model aCard
+
+                            else if
+                                flippedCardsIsEven (shownCards model.cards)
+                                    && notMatched model.cards aCard
+                            then
+                                hideCard model aCard
 
                             else
                                 aCard
@@ -53,13 +59,44 @@ update msg model =
             )
 
 
-doFlip : Model -> Card -> Card
-doFlip model card =
+shownCards : List Card -> List Card
+shownCards allCards =
+    List.filter (\aCard -> aCard.isFlipped) allCards
+
+
+showCard : Model -> Card -> Card
+showCard model card =
     if not card.isFlipped then
         { card | isFlipped = True }
 
     else
         card
+
+
+hideCard : Model -> Card -> Card
+hideCard model card =
+    if card.isFlipped then
+        { card | isFlipped = False }
+
+    else
+        card
+
+
+flippedCardsIsEven : List Card -> Bool
+flippedCardsIsEven flippedCards =
+    List.length flippedCards
+        /= 0
+        && modBy 2 (List.length flippedCards)
+        == 0
+
+
+notMatched : List Card -> Card -> Bool
+notMatched cards card =
+    (List.filter (\aCard -> aCard.isFlipped) cards
+        |> List.filter (\aCard -> aCard.value == card.match)
+        |> List.length
+    )
+        == 0
 
 
 subscriptions : Model -> Sub Msg

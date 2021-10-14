@@ -18,7 +18,7 @@ type Msg
 
 cardPairs : List ( String, String )
 cardPairs =
-    [ ( "hello", "world" ), ( "play", "cards" ) ]
+    [ ( "azure", "blue" ), ( "red", "crimson" ), ( "green", "emerald" ) ]
 
 
 initCardSet : List Card
