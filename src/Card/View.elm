@@ -1,24 +1,13 @@
-module Card exposing (Card, Msg(..), initCardSet, renderCardList)
+module Card.View exposing (initCardSet, renderCardList)
 
+import Card.Data exposing (Card)
 import Html exposing (Html, button, img, li, text, ul)
 import Html.Attributes exposing (class, classList, disabled, src)
 import Html.Events exposing (onClick)
 import List
+import Message exposing (Msg(..))
 import Random
 import Random.List
-
-
-type alias Card =
-    { value : String
-    , match : String
-    , isRevealed : Bool
-    }
-
-
-type Msg
-    = PressedPlay
-    | ShuffledCards (List Card)
-    | SelectedCard Card
 
 
 cardPairs : List ( String, String )
