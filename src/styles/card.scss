@@ -1,9 +1,52 @@
 .cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
   .card {
+    height: 16rem;
     padding: 1rem;
+    width: 16rem;
     button {
-      max-width: 33%;
+      background: $orange;
+      border: none;
+      color: $white;
+      cursor: pointer;
+      height: 100%;
+      font-size: 2rem;
+      margin: 0;
+      padding: 1rem;
+      text-decoration: none;
+      text-align: center;
+      transition: background 250ms ease-in-out,
+                transform 150ms ease;
+      width: 100%;
+      -webkit-appearance: none;
+      -moz-appearance: none;
     }
+
+    button:hover,
+    button:focus {
+      background: $orange_dark;
+    }
+
+    button:focus {
+      outline: 1px solid $orange_dark;
+      outline-offset: -4px;
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+    &.revealed {
+      button {
+        cursor: unset;
+      }
+      button:hover,
+      button:focus {
+        background: $orange;
+      }
+    }
+
   }
 
 }

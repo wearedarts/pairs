@@ -133,13 +133,7 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "content" ]
                     [ h1 [] [ text "Find the pairs" ]
-                    , div [ class "game-area" ]
-                        [ if not model.isPlaying then
-                            button [ onClick PressedPlay ] [ text "Shuffle & Play!" ]
-
-                          else
-                            renderCardList model.cards
-                        ]
+                    , renderGameArea model
                     ]
                 , div []
                     [ h2 [] [ text "How to play" ]
@@ -150,4 +144,15 @@ view model =
             ]
         , footer []
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
+        ]
+
+
+renderGameArea : Model -> Html Msg
+renderGameArea model =
+    div [ class "game-area" ]
+        [ if not model.isPlaying then
+            button [ onClick PressedPlay ] [ text "Shuffle & Play!" ]
+
+          else
+            renderCardList model.cards
         ]
