@@ -2,7 +2,8 @@ module Main exposing (main)
 
 import Browser
 import Card exposing (Card, Msg(..), initCardSet, renderCardList)
-import Html exposing (Html, div, h1, text)
+import Html exposing (Html, a, div, footer, h1, h2, header, img, main_, p, text)
+import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (..)
 
 
@@ -111,8 +112,26 @@ viewDocument model =
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ h1 [] [ text "Find the Pairs" ]
-        , renderCardList model.cards
+    div [ class "page" ]
+        [ header []
+            [ div [ class "container" ]
+                [ img [ src "/darts-logo-cream.svg" ] []
+                ]
+            ]
+        , main_ []
+            [ div [ class "container" ]
+                [ div [ class "content" ]
+                    [ h1 [] [ text "Find the pairs" ]
+                    , div [ class "game-area" ]
+                        [ renderCardList model.cards ]
+                    ]
+                , div []
+                    [ h2 [] [ text "How to play" ]
+                    , p [] [ text "[cCc] instructions " ]
+                    , p [] [ text "[cCc] and help" ]
+                    ]
+                ]
+            ]
+        , footer []
+            [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
