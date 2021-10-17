@@ -1,0 +1,113 @@
+
+/**
+ * Page sections
+ */
+
+.page {
+  align-items: center;
+  background-color: $blue;
+  display: flex;
+  flex-direction: column;
+  min-height: 99vh;
+}
+
+header {
+  background-color: $orange;
+  flex-basis: 10rem;
+  width: 100%;
+
+  img {
+    display: block;
+    height: 6rem;
+  }
+}
+
+main {
+  flex-grow: 1;
+
+  h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin: 2rem 0;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0;
+  }
+
+  .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .game-area {
+      aspect-ratio: calc(4 / 3);
+      background-color: $cream;
+      //background-image: url(images/preview.png);
+      margin: 1rem;
+      max-width: 800px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    a {
+      align-items: center;
+      align-self: flex-end;
+      background-color: $green;
+      color: $cream;
+      display: flex;
+      font-weight: 500;
+      justify-content: center;
+      margin-bottom: 2rem;
+      text-decoration: none;
+      font-size: 2rem;
+      padding: 1rem 2rem;
+
+      &:focus {
+        outline: 3px solid $orange;
+        outline-offset: 3px;
+      }
+    }
+  }
+}
+
+footer {
+  background-color: $purple;
+  height: 4rem;
+  width: 100%;
+
+  a {
+    color: $cream;
+    display: block;
+    font-weight: 500;
+    text-decoration: none;
+
+    &:focus {
+      outline: 3px solid $orange;
+      outline-offset: 3px;
+    }
+  }
+}
+
+/**
+ * Components
+ */
+
+// Container element to constrain page max-width
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 2rem;
+}
+
+// Utility styles for large page sections
+.section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
