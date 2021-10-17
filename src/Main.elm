@@ -2,9 +2,11 @@ module Main exposing (main)
 
 import Browser
 import Card exposing (Card, Msg(..), initCardSet, renderCardList)
-import Html exposing (Html, a, div, footer, h1, h2, header, img, main_, p, text)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, main_, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (..)
+import Random
+import Random.List
 
 
 type alias Flags =
@@ -22,13 +24,14 @@ main =
 
 
 type alias Model =
-    { cards : List Card
+    { isPlaying : Bool
+    , cards : List Card
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { cards = initCardSet }
+    ( { isPlaying = False, cards = initCardSet }
     , Cmd.none
     )
 
@@ -36,6 +39,14 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PressedPlay ->
+            ( { model | isPlaying = True }
+            , Random.generate ShuffledCards (Random.List.shuffle model.cards)
+            )
+
+        ShuffledCards shuffledCards ->
+            ( { model | cards = shuffledCards }, Cmd.none )
+
         SelectedCard card ->
             let
                 newCardState =
@@ -123,7 +134,12 @@ view model =
                 [ div [ class "content" ]
                     [ h1 [] [ text "Find the pairs" ]
                     , div [ class "game-area" ]
-                        [ renderCardList model.cards ]
+                        [ if not model.isPlaying then
+                            button [ onClick PressedPlay ] [ text "Shuffle & Play!" ]
+
+                          else
+                            renderCardList model.cards
+                        ]
                     ]
                 , div []
                     [ h2 [] [ text "How to play" ]

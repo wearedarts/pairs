@@ -1,8 +1,11 @@
 module Card exposing (Card, Msg(..), initCardSet, renderCardList)
 
 import Html exposing (Html, button, li, text, ul)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import List
+import Random
+import Random.List
 
 
 type alias Card =
@@ -13,7 +16,9 @@ type alias Card =
 
 
 type Msg
-    = SelectedCard Card
+    = PressedPlay
+    | ShuffledCards (List Card)
+    | SelectedCard Card
 
 
 cardPairs : List ( String, String )
@@ -35,10 +40,10 @@ initCardSet =
 
 renderCardList : List Card -> Html Msg
 renderCardList cards =
-    ul []
+    ul [ class "cards" ]
         (List.map
             (\card ->
-                li []
+                li [ class "card" ]
                     [ button [ onClick (SelectedCard card) ]
                         [ if card.isRevealed then
                             text card.value
