@@ -14,6 +14,7 @@
 header {
   background-color: $orange;
   flex-basis: 10rem;
+  width: 100%;
 
   img {
     display: block;
@@ -77,6 +78,7 @@ main {
 footer {
   background-color: $purple;
   height: 4rem;
+  width: 100%;
 
   a {
     color: $cream;
