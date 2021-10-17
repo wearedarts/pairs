@@ -1,9 +1,64 @@
 .cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
   .card {
+    height: 16rem;
     padding: 1rem;
+    width: 16rem;
     button {
-      max-width: 33%;
+      background: $orange;
+      border: none;
+      color: $orange;
+      cursor: pointer;
+      height: 100%;
+      font-size: 2rem;
+      margin: 0;
+      padding: 1rem;
+      text-decoration: none;
+      text-align: center;
+      width: 100%;
+      -webkit-appearance: none;
+      -moz-appearance: none;
     }
+
+    button:hover,
+    button:focus {
+      background: $orange_dark;
+    }
+
+    button:focus {
+      outline: 1px solid $orange_dark;
+      outline-offset: -4px;
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+    &.revealed {
+      button {
+        cursor: unset;
+        animation-name: cardFlip;
+        animation-duration: 600ms;
+        animation-timing-function: ease-in;
+        animation-iteration-count: 1;
+        animation-direction: normal;
+        animation-delay: 0;
+        color: $white;
+      }
+      button:hover,
+      button:focus {
+        background: $orange;
+      }
+    }
+
   }
 
+}
+
+@keyframes cardFlip {
+    0% {transform: rotateY(0deg); opacity: 0; color: $orange;}
+    24% {background-position-y:0px;}
+    25% {background-position-y:204px;}
+    100% {transform: rotateY(180deg); color: $orange; opacity: 1;}
 }
