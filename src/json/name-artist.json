@@ -1,0 +1,9 @@
+{
+    "title": "Set Two",
+    "pairsList": {
+        "Barbara": "card-images/barbara.svg",
+        "Frida": "card-images/frida.svg",
+        "Andy": "card-images/andy.svg",
+        "Vincent": "card-images/vincent.svg"
+    }
+}

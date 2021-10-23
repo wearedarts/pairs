@@ -1,7 +1,7 @@
 module Card exposing (Card, Msg(..), decodeCardSet, initCardSet, renderCardList)
 
 import Html exposing (Html, button, img, li, text, ul)
-import Html.Attributes exposing (class, classList, disabled, src)
+import Html.Attributes exposing (alt, class, classList, disabled, src)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import List
@@ -14,6 +14,19 @@ type alias Card =
     , match : String
     , isRevealed : Bool
     }
+
+
+type Value
+    = Image
+    | Text
+
+
+stringToValueType aString =
+    if String.contains "card-images/" aString then
+        Image
+
+    else
+        Text
 
 
 type Msg
@@ -68,7 +81,12 @@ renderCardList cards =
                         , disabled card.isRevealed
                         ]
                         [ if card.isRevealed then
-                            text card.value
+                            case stringToValueType card.value of
+                                Image ->
+                                    img [ src card.value, alt card.match ] []
+
+                                Text ->
+                                    text card.value
 
                           else
                             img [ src "point-card-back.png" ] []
