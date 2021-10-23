@@ -1,5 +1,8 @@
 ## Pairs
 Matching pairs game
+[![Netlify Status](https://api.netlify.com/api/v1/badges/61ad2eba-b06c-437b-9f3e-87955bda141d/deploy-status)](https://app.netlify.com/sites/darts-pairs/deploys)
+[Alpha](https://darts-pairs.netlify.app)
+
 
 ### Prerequisites
 Follow official install instructions for your setup:
