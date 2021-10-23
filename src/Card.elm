@@ -1,8 +1,9 @@
-module Card exposing (Card, Msg(..), initCardSet, renderCardList)
+module Card exposing (Card, Msg(..), decodeCardSet, initCardSet, renderCardList)
 
 import Html exposing (Html, button, img, li, text, ul)
 import Html.Attributes exposing (class, classList, disabled, src)
 import Html.Events exposing (onClick)
+import Json.Decode as Decode
 import List
 import Random
 import Random.List
@@ -21,16 +22,31 @@ type Msg
     | SelectedCard Card
 
 
-cardPairs : List ( String, String )
-cardPairs =
+cardSetDecoder : Decode.Decoder (List ( String, String ))
+cardSetDecoder =
+    Decode.keyValuePairs Decode.string
+
+
+decodeCardSet : Decode.Value -> List ( String, String )
+decodeCardSet json =
+    case Decode.decodeValue cardSetDecoder json of
+        Ok cardSet ->
+            cardSet
+
+        Err _ ->
+            defaultCardPairs
+
+
+defaultCardPairs : List ( String, String )
+defaultCardPairs =
     [ ( "azure", "blue" )
     , ( "red", "crimson" )
     , ( "green", "emerald" )
     ]
 
 
-initCardSet : List Card
-initCardSet =
+initCardSet : List ( String, String ) -> List Card
+initCardSet cardPairs =
     List.map
         (\( aValue, aMatch ) ->
             [ { value = aValue, match = aMatch, isRevealed = False }

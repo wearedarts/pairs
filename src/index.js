@@ -4,4 +4,6 @@ require('./styles/style.scss');
 
 const { Elm } = require('./Main.elm');
 
-Elm.Main.init({});
+const cardSet = require('./json/set1.json')
+
+Elm.Main.init({flags: cardSet});

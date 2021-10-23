@@ -1,16 +1,19 @@
 module Main exposing (main)
 
 import Browser
-import Card exposing (Card, Msg(..), initCardSet, renderCardList)
+import Card exposing (Card, Msg(..), decodeCardSet, initCardSet, renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, header, img, main_, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (..)
+import Json.Decode as Decode
 import Random
 import Random.List
 
 
 type alias Flags =
-    ()
+    { pairsList : Decode.Value
+    , title : Decode.Value
+    }
 
 
 main : Program Flags Model Msg
@@ -29,9 +32,9 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { isPlaying = False, cards = initCardSet }
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { isPlaying = False, cards = initCardSet (decodeCardSet flags.pairsList) }
     , Cmd.none
     )
 
