@@ -1,18 +1,22 @@
 module Main exposing (main)
 
 import Browser
-import Card exposing (Card, Msg(..), decodeCardSet, initCardSet, renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, header, img, main_, p, text)
-import Html.Attributes exposing (class, href, src)
-import Html.Events exposing (..)
+import Browser.Navigation
+import Card exposing (Card, Msg(..), availableCardSets, decodeCardSet, initCardSet, renderCardList)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, input, label, main_, p, text)
+import Html.Attributes exposing (checked, class, href, src, type_)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Random
 import Random.List
+import Url
+import Url.Parser as Parser
+import Url.Parser.Query as Query
 
 
 type alias Flags =
-    { pairsList : Decode.Value
-    , title : Decode.Value
+    { cardJson : { pairsList : Decode.Value }
+    , filename : String
     }
 
 
@@ -29,12 +33,16 @@ main =
 type alias Model =
     { isPlaying : Bool
     , cards : List Card
+    , selectedCardSet : String
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { isPlaying = False, cards = initCardSet (decodeCardSet flags.pairsList) }
+    ( { isPlaying = False
+      , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
+      , selectedCardSet = flags.filename
+      }
     , Cmd.none
     )
 
@@ -42,6 +50,9 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectedCardSet setName ->
+            ( model, Browser.Navigation.load ("?set=" ++ setName) )
+
         PressedPlay ->
             ( { model | isPlaying = True }
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
@@ -136,6 +147,11 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "content" ]
                     [ h1 [] [ text "Find the pairs" ]
+                    , if not model.isPlaying then
+                        div [] (renderCardSetRadios model.selectedCardSet)
+
+                      else
+                        text ""
                     , renderGameArea model
                     ]
                 , div []
@@ -148,6 +164,23 @@ view model =
         , footer []
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
+
+
+renderCardSetRadios : String -> List (Html Msg)
+renderCardSetRadios selectedCardSet =
+    List.map
+        (\{ title, file } ->
+            [ input
+                [ type_ "radio"
+                , onClick (SelectedCardSet file)
+                , checked (file == selectedCardSet)
+                ]
+                []
+            , label [] [ text title ]
+            ]
+        )
+        availableCardSets
+        |> List.concat
 
 
 renderGameArea : Model -> Html Msg

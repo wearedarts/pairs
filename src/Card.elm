@@ -1,4 +1,4 @@
-module Card exposing (Card, Msg(..), decodeCardSet, initCardSet, renderCardList)
+module Card exposing (Card, Msg(..), availableCardSets, decodeCardSet, initCardSet, renderCardList)
 
 import Html exposing (Html, button, img, li, text, ul)
 import Html.Attributes exposing (alt, class, classList, disabled, src)
@@ -30,9 +30,24 @@ stringToValueType aString =
 
 
 type Msg
-    = PressedPlay
+    = SelectedCardSet String
+    | PressedPlay
     | ShuffledCards (List Card)
     | SelectedCard Card
+
+
+type alias SetFileMeta =
+    { title : String
+    , file : String
+    }
+
+
+availableCardSets : List SetFileMeta
+availableCardSets =
+    -- WARNING these need to be kept in sync with the files in `src/json`
+    [ { title = "Colours", file = "set1" }
+    , { title = "Artists", file = "name-artist" }
+    ]
 
 
 cardSetDecoder : Decode.Decoder (List ( String, String ))

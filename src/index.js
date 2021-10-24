@@ -8,4 +8,4 @@ const urlParams = new URLSearchParams(window.location.search)
 const setName = urlParams.get('set') ? urlParams.get('set') : 'set1'
 const cardSet = require('./json/' + setName + '.json')
 
-Elm.Main.init({flags: cardSet})
+Elm.Main.init({flags: {cardJson: cardSet, filename: setName}})
