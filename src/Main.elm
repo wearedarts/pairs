@@ -1,10 +1,12 @@
 module Main exposing (main)
 
 import Browser
-import Card exposing (Card, Msg(..), initCardSet, renderCardList)
+import Card.Data exposing (Card)
+import Card.View exposing (initCardSet, renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, main_, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (..)
+import Message exposing (Msg(..))
 import Random
 import Random.List
 
@@ -25,6 +27,7 @@ main =
 
 type alias Model =
     { isPlaying : Bool
+    , helpClosed : Bool
     , cards : List Card
     , cardsTried : Int
     }
@@ -32,7 +35,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { isPlaying = False, cards = initCardSet, cardsTried = 0 }
+    ( { isPlaying = False, helpClosed = True, cards = initCardSet, cardsTried = 0 }
     , Cmd.none
     )
 
@@ -47,6 +50,9 @@ update msg model =
 
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
+
+        PressedHelp ->
+            ( { model | helpClosed = not model.helpClosed }, Cmd.none )
 
         SelectedCard card ->
             let
@@ -153,11 +159,7 @@ view model =
                         text ""
                     , renderGameArea model
                     ]
-                , div []
-                    [ h2 [] [ text "How to play" ]
-                    , p [] [ text "[cCc] instructions " ]
-                    , p [] [ text "[cCc] and help" ]
-                    ]
+                , renderHelp model
                 ]
             ]
         , footer []
@@ -243,3 +245,23 @@ renderGameArea model =
           else
             renderCardList model.cards
         ]
+
+
+renderHelp : Model -> Html Msg
+renderHelp model =
+    if model.isPlaying && model.helpClosed then
+        button [ onClick PressedHelp ] [ text "How to play" ]
+
+    else
+        div []
+            [ h2 []
+                [ text "How to play "
+                , if model.isPlaying then
+                    button [ onClick PressedHelp ] [ text "Close how to play" ]
+
+                  else
+                    text ""
+                ]
+            , p [] [ text "[cCc] instructions " ]
+            , p [] [ text "[cCc] and help" ]
+            ]
