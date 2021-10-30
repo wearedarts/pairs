@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Card.Data exposing (Card)
 import Card.View exposing (initCardSet, renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, header, img, main_, p, text)
+import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, main_, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (..)
 import Message exposing (Msg(..))
@@ -29,12 +29,13 @@ type alias Model =
     { isPlaying : Bool
     , helpClosed : Bool
     , cards : List Card
+    , cardsTried : Int
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { isPlaying = False, helpClosed = True, cards = initCardSet }
+    ( { isPlaying = False, helpClosed = True, cards = initCardSet, cardsTried = 0 }
     , Cmd.none
     )
 
@@ -72,7 +73,10 @@ update msg model =
                         )
                         model.cards
             in
-            ( { model | cards = newCardState }
+            ( { model
+                | cards = newCardState
+                , cardsTried = model.cardsTried + 1
+              }
             , Cmd.none
             )
 
@@ -117,6 +121,15 @@ notMatched cards card =
         == 0
 
 
+matched : List Card -> Card -> Bool
+matched cards card =
+    (List.filter (\aCard -> aCard.isRevealed) cards
+        |> List.filter (\aCard -> aCard.value == card.match)
+        |> List.length
+    )
+        == 1
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
@@ -139,6 +152,11 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "content" ]
                     [ h1 [] [ text "Find the pairs" ]
+                    , if model.isPlaying then
+                        renderScore model
+
+                      else
+                        text ""
                     , renderGameArea model
                     ]
                 , renderHelp model
@@ -147,6 +165,75 @@ view model =
         , footer []
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
+
+
+renderScore : Model -> Html Msg
+renderScore model =
+    let
+        turns : Int
+        turns =
+            model.cardsTried // 2
+
+        pairs : Int
+        pairs =
+            pairsFound (revealedCards model.cards)
+    in
+    h3 []
+        [ text
+            ("You've taken "
+                ++ turnsToString turns
+                ++ " and found "
+                ++ pairsToString pairs
+                ++ ". "
+                ++ (if turns > 0 then
+                        successToString turns pairs
+
+                    else
+                        ""
+                   )
+            )
+        ]
+
+
+pairsFound : List Card -> Int
+pairsFound cardsShowing =
+    (cardsShowing
+        |> List.filter (\card -> matched cardsShowing card)
+        |> List.length
+    )
+        // 2
+
+
+turnsToString : Int -> String
+turnsToString turns =
+    String.fromInt turns
+        ++ (if turns == 1 then
+                " turn"
+
+            else
+                " turns"
+           )
+
+
+pairsToString : Int -> String
+pairsToString matches =
+    String.fromInt matches
+        ++ (if matches == 1 then
+                " pair"
+
+            else
+                " pairs"
+           )
+
+
+successToString : Int -> Int -> String
+successToString turnsTaken pairs =
+    ((toFloat pairs / toFloat turnsTaken)
+        * 100
+        |> round
+        |> String.fromInt
+    )
+        ++ "% Success"
 
 
 renderGameArea : Model -> Html Msg
