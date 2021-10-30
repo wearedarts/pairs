@@ -5,7 +5,7 @@ import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, header, img, input, label, main_, p, text)
-import Html.Attributes exposing (checked, class, href, src, type_)
+import Html.Attributes exposing (checked, class, for, href, id, src, type_)
 import Html.Events exposing (..)
 import Json.Decode as Decode
 import Message exposing (Msg(..))
@@ -173,13 +173,18 @@ renderCardSetRadios : String -> List (Html Msg)
 renderCardSetRadios selectedCardSet =
     List.map
         (\{ title, file } ->
+            let
+                titleId =
+                    String.toLower (String.replace " " "" title)
+            in
             [ input
                 [ type_ "radio"
                 , onClick (SelectedCardSet file)
                 , checked (file == selectedCardSet)
+                , id titleId
                 ]
                 []
-            , label [] [ text title ]
+            , label [ for titleId ] [ text title ]
             ]
         )
         availableCardSets
