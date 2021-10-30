@@ -4,7 +4,8 @@ import Card.Data exposing (Card)
 
 
 type Msg
-    = PressedPlay
+    = SelectedCardSet String
+    | PressedPlay
     | PressedHelp
     | ShuffledCards (List Card)
     | SelectedCard Card

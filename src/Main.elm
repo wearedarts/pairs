@@ -1,18 +1,22 @@
 module Main exposing (main)
 
 import Browser
-import Card.Data exposing (Card)
-import Card.View exposing (initCardSet, renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, main_, p, text)
-import Html.Attributes exposing (class, href, src)
-import Html.Events exposing (..)
+import Browser.Navigation
+import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
+import Card.View exposing (renderCardList)
+import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, main_, p, text)
+import Html.Attributes exposing (checked, class, for, href, id, src, type_)
+import Html.Events exposing (onClick)
+import Json.Decode as Decode
 import Message exposing (Msg(..))
 import Random
 import Random.List
 
 
 type alias Flags =
-    ()
+    { cardJson : { pairsList : Decode.Value }
+    , filename : String
+    }
 
 
 main : Program Flags Model Msg
@@ -29,13 +33,19 @@ type alias Model =
     { isPlaying : Bool
     , helpClosed : Bool
     , cards : List Card
+    , selectedCardSet : String
     , cardsTried : Int
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { isPlaying = False, helpClosed = True, cards = initCardSet, cardsTried = 0 }
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { isPlaying = False
+      , helpClosed = True
+      , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
+      , selectedCardSet = flags.filename
+      , cardsTried = 0
+      }
     , Cmd.none
     )
 
@@ -43,6 +53,9 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectedCardSet setName ->
+            ( model, Browser.Navigation.load ("?set=" ++ setName) )
+
         PressedPlay ->
             ( { model | isPlaying = True }
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
@@ -60,13 +73,13 @@ update msg model =
                     List.map
                         (\aCard ->
                             if card == aCard then
-                                showCard model aCard
+                                showCard aCard
 
                             else if
                                 cardsIsEven (revealedCards model.cards)
                                     && notMatched model.cards aCard
                             then
-                                hideCard model aCard
+                                hideCard aCard
 
                             else
                                 aCard
@@ -86,8 +99,8 @@ revealedCards allCards =
     List.filter (\aCard -> aCard.isRevealed) allCards
 
 
-showCard : Model -> Card -> Card
-showCard model card =
+showCard : Card -> Card
+showCard card =
     if not card.isRevealed then
         { card | isRevealed = True }
 
@@ -95,8 +108,8 @@ showCard model card =
         card
 
 
-hideCard : Model -> Card -> Card
-hideCard model card =
+hideCard : Card -> Card
+hideCard card =
     if card.isRevealed then
         { card | isRevealed = False }
 
@@ -131,7 +144,7 @@ matched cards card =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -152,6 +165,11 @@ view model =
             [ div [ class "container" ]
                 [ div [ class "content" ]
                     [ h1 [] [ text "Find the pairs" ]
+                    , if not model.isPlaying then
+                        div [] (renderCardSetRadios model.selectedCardSet)
+
+                      else
+                        text ""
                     , if model.isPlaying then
                         renderScore model
 
@@ -165,6 +183,28 @@ view model =
         , footer []
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
+
+
+renderCardSetRadios : String -> List (Html Msg)
+renderCardSetRadios selectedCardSet =
+    List.map
+        (\{ title, file } ->
+            let
+                titleId =
+                    String.toLower (String.replace " " "" title)
+            in
+            [ input
+                [ type_ "radio"
+                , onClick (SelectedCardSet file)
+                , checked (file == selectedCardSet)
+                , id titleId
+                ]
+                []
+            , label [ for titleId ] [ text title ]
+            ]
+        )
+        availableCardSets
+        |> List.concat
 
 
 renderScore : Model -> Html Msg
