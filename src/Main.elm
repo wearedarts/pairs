@@ -4,16 +4,13 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, header, img, input, label, main_, p, text)
+import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, main_, p, text)
 import Html.Attributes exposing (checked, class, for, href, id, src, type_)
-import Html.Events exposing (..)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Message exposing (Msg(..))
 import Random
 import Random.List
-import Url
-import Url.Parser as Parser
-import Url.Parser.Query as Query
 
 
 type alias Flags =
@@ -37,6 +34,7 @@ type alias Model =
     , helpClosed : Bool
     , cards : List Card
     , selectedCardSet : String
+    , cardsTried : Int
     }
 
 
@@ -46,6 +44,7 @@ init flags =
       , helpClosed = True
       , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
       , selectedCardSet = flags.filename
+      , cardsTried = 0
       }
     , Cmd.none
     )
@@ -74,20 +73,23 @@ update msg model =
                     List.map
                         (\aCard ->
                             if card == aCard then
-                                showCard model aCard
+                                showCard aCard
 
                             else if
                                 cardsIsEven (revealedCards model.cards)
                                     && notMatched model.cards aCard
                             then
-                                hideCard model aCard
+                                hideCard aCard
 
                             else
                                 aCard
                         )
                         model.cards
             in
-            ( { model | cards = newCardState }
+            ( { model
+                | cards = newCardState
+                , cardsTried = model.cardsTried + 1
+              }
             , Cmd.none
             )
 
@@ -97,8 +99,8 @@ revealedCards allCards =
     List.filter (\aCard -> aCard.isRevealed) allCards
 
 
-showCard : Model -> Card -> Card
-showCard model card =
+showCard : Card -> Card
+showCard card =
     if not card.isRevealed then
         { card | isRevealed = True }
 
@@ -106,8 +108,8 @@ showCard model card =
         card
 
 
-hideCard : Model -> Card -> Card
-hideCard model card =
+hideCard : Card -> Card
+hideCard card =
     if card.isRevealed then
         { card | isRevealed = False }
 
@@ -132,8 +134,17 @@ notMatched cards card =
         == 0
 
 
+matched : List Card -> Card -> Bool
+matched cards card =
+    (List.filter (\aCard -> aCard.isRevealed) cards
+        |> List.filter (\aCard -> aCard.value == card.match)
+        |> List.length
+    )
+        == 1
+
+
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -156,6 +167,11 @@ view model =
                     [ h1 [] [ text "Find the pairs" ]
                     , if not model.isPlaying then
                         div [] (renderCardSetRadios model.selectedCardSet)
+
+                      else
+                        text ""
+                    , if model.isPlaying then
+                        renderScore model
 
                       else
                         text ""
@@ -189,6 +205,75 @@ renderCardSetRadios selectedCardSet =
         )
         availableCardSets
         |> List.concat
+
+
+renderScore : Model -> Html Msg
+renderScore model =
+    let
+        turns : Int
+        turns =
+            model.cardsTried // 2
+
+        pairs : Int
+        pairs =
+            pairsFound (revealedCards model.cards)
+    in
+    h3 []
+        [ text
+            ("You've taken "
+                ++ turnsToString turns
+                ++ " and found "
+                ++ pairsToString pairs
+                ++ ". "
+                ++ (if turns > 0 then
+                        successToString turns pairs
+
+                    else
+                        ""
+                   )
+            )
+        ]
+
+
+pairsFound : List Card -> Int
+pairsFound cardsShowing =
+    (cardsShowing
+        |> List.filter (\card -> matched cardsShowing card)
+        |> List.length
+    )
+        // 2
+
+
+turnsToString : Int -> String
+turnsToString turns =
+    String.fromInt turns
+        ++ (if turns == 1 then
+                " turn"
+
+            else
+                " turns"
+           )
+
+
+pairsToString : Int -> String
+pairsToString matches =
+    String.fromInt matches
+        ++ (if matches == 1 then
+                " pair"
+
+            else
+                " pairs"
+           )
+
+
+successToString : Int -> Int -> String
+successToString turnsTaken pairs =
+    ((toFloat pairs / toFloat turnsTaken)
+        * 100
+        |> round
+        |> String.fromInt
+    )
+        ++ "% Success"
 
 
 renderGameArea : Model -> Html Msg

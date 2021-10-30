@@ -4,11 +4,8 @@ import Card.Data exposing (Card)
 import Html exposing (Html, button, img, li, text, ul)
 import Html.Attributes exposing (alt, class, classList, disabled, src)
 import Html.Events exposing (onClick)
-import Json.Decode as Decode
 import List
 import Message exposing (Msg(..))
-import Random
-import Random.List
 
 
 type Value
@@ -16,6 +13,7 @@ type Value
     | Text
 
 
+stringToValueType : String -> Value
 stringToValueType aString =
     if String.contains "card-images/" aString then
         Image
