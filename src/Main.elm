@@ -156,31 +156,29 @@ viewDocument model =
 view : Model -> Html Msg
 view model =
     div [ class "page" ]
-        [ header []
+        [ header [ class "page-section" ]
             [ div [ class "container" ]
-                [ img [ src "/darts-logo-cream.svg" ] []
+                [ img [ src "/darts-logo-cream.svg", alt "darts" ] []
                 ]
             ]
-        , main_ []
-            [ div [ class "container" ]
-                [ div [ class "content" ]
-                    [ h1 [] [ text "Find the pairs" ]
-                    , if not model.isPlaying then
-                        div [] (renderCardSetRadios model.selectedCardSet)
+        , main_ [ class "page-section" ]
+            [ div [ class "container fill-height" ]
+                [ h1 [] [ text "find the pairs" ]
+                , if not model.isPlaying then
+                    fieldset [] (legend [] [ h2 [] [ text "choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
 
-                      else
-                        text ""
-                    , if model.isPlaying then
-                        renderScore model
+                  else
+                    text ""
+                , if model.isPlaying then
+                    renderScore model
 
-                      else
-                        text ""
-                    , renderGameArea model
-                    ]
+                  else
+                    text ""
+                , renderGameArea model
                 , renderHelp model
                 ]
             ]
-        , footer []
+        , footer [ class "page-section" ]
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
 
