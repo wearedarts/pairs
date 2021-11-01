@@ -1,8 +1,8 @@
 module Card.View exposing (renderCardList)
 
 import Card.Data exposing (Card)
-import Html exposing (Html, button, img, li, text, ul)
-import Html.Attributes exposing (alt, class, classList, disabled, src)
+import Html exposing (Html, button, div, img, li, span, text, ul)
+import Html.Attributes exposing (alt, class, classList, disabled, src, style)
 import Html.Events exposing (onClick)
 import List
 import Message exposing (Msg(..))
@@ -41,7 +41,7 @@ renderCardList cards =
                                     text card.value
 
                           else
-                            img [ src "point-card-back.png" ] []
+                            div [ class "reverse" ] [ span [ class "visually-hidden" ] [ text "Turn over card" ] ]
                         ]
                     ]
             )
