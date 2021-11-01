@@ -4,8 +4,9 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, main_, p, text)
-import Html.Attributes exposing (checked, class, for, href, id, src, type_)
+import Html exposing (Html, a, button, div, fieldset, footer, h1, h2, h3, header, img, input, label, legend, main_, p, text)
+import Html.Attributes exposing (alt, checked, class, for, href, id, src, type_)
+import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Message exposing (Msg(..))
@@ -41,7 +42,7 @@ type alias Model =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { isPlaying = False
-      , helpClosed = True
+      , helpClosed = False
       , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
       , selectedCardSet = flags.filename
       , cardsTried = 0
@@ -57,7 +58,7 @@ update msg model =
             ( model, Browser.Navigation.load ("?set=" ++ setName) )
 
         PressedPlay ->
-            ( { model | isPlaying = True }
+            ( { model | isPlaying = True, helpClosed = True }
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
             )
 
@@ -276,30 +277,27 @@ successToString turnsTaken pairs =
 
 renderGameArea : Model -> Html Msg
 renderGameArea model =
-    div [ class "game-area" ]
-        [ if not model.isPlaying then
-            button [ onClick PressedPlay ] [ text "Shuffle & Play!" ]
+    if not model.isPlaying then
+        button [ onClick PressedPlay, class "play" ] [ text "Shuffle & Play!" ]
 
-          else
-            renderCardList model.cards
-        ]
+    else
+        renderCardList model.cards
 
 
 renderHelp : Model -> Html Msg
 renderHelp model =
-    if model.isPlaying && model.helpClosed then
-        button [ onClick PressedHelp ] [ text "How to play" ]
+    if model.helpClosed then
+        button [ class "help", onClick PressedHelp, ariaExpanded "false"] [ h2 [] [ text "How to play +" ] ]
 
     else
         div []
-            [ h2 []
-                [ text "How to play "
-                , if model.isPlaying then
-                    button [ onClick PressedHelp ] [ text "Close how to play" ]
+            [ button [ class "help", onClick PressedHelp, ariaExpanded "true" ] [ h2 [] [ text "How to play -" ] ]
+            , if model.helpClosed then
+                text ""
 
-                  else
-                    text ""
-                ]
-            , p [] [ text "[cCc] instructions " ]
-            , p [] [ text "[cCc] and help" ]
+              else
+                div []
+                    [ p [] [ text "[cCc] instructions " ]
+                    , p [] [ text "[cCc] and help" ]
+                    ]
             ]

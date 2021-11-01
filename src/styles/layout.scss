@@ -58,11 +58,6 @@ footer {
     display: block;
     font-weight: 500;
     text-decoration: none;
-
-    &:focus {
-      outline: 3px solid $orange;
-      outline-offset: 3px;
-    }
   }
 }
 
@@ -83,4 +78,43 @@ footer {
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.play {
+  background-color: $orange;
+  border-radius: 0;
+  border: none;
+  color: $cream;
+  display: block;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 2rem auto;
+  padding: 0.5rem;
+}
+
+.help {
+  color: $cream;
+  background-color: $green;
+  border: none;
+  padding: 0.5rem;
+  margin: 1rem 0;
+
+  h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.fill-height {
+  align-self: flex-start;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
 }
