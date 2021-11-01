@@ -10,15 +10,14 @@ $grey_dark: #000000e6;
 $grey_light: #3c3c3c;
 $black: #00000033;
 
-//$smallPhoneOnly: '@media (max-width: 349px)';
-//$phonePlus: '@media (min-width: 350px)';
-//$tabletPortraitPlus: '@media (min-width: 600px)';
-//$tabletLandscapePlus: '@media (min-width: 900px)';
-//$desktopPlus: '@media (min-width: 1200px)';
+$smallPhoneOnly: 349px;
+$phonePlus: 350px;
+$tabletPortraitPlus: 600px;
+$tabletLandscapePlus: 900px;
+$desktopPlus: 1200px;
 
 //$gutterSmall: 1rem;
 //$gutterLarge: 2rem;
-
 
 //
 /* Fonts */
@@ -46,7 +45,6 @@ $black: #00000033;
   font-style: normal;
   font-display: swap;
 }
-
 
 //
 /* Reset adapted from https://github.com/hankchizljaw/modern-css-reset */
@@ -138,4 +136,21 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 100%;
   font-style: normal;
   font-weight: bold;
+}
+
+a {
+  &:focus {
+    outline: 3px solid $orange;
+    outline-offset: 3px;
+  }
+}
+
+button {
+  border-radius: 0;
+  border: none;
+
+  &:focus {
+    outline: 3px solid $orange;
+    outline-offset: 3px;
+  }
 }
