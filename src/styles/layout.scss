@@ -4,8 +4,8 @@
 
 .page {
   align-items: center;
-  background-color: $blue;
-  color: $cream;
+  background-color: $pink;
+  color: $plum;
   display: flex;
   flex-direction: column;
   font-family: Poppins, sans-serif;
@@ -16,7 +16,7 @@
 }
 
 header {
-  background-color: $orange;
+  background-color: $teal;
   flex-basis: 10rem;
   width: 100%;
 
@@ -49,7 +49,7 @@ main {
 }
 
 footer {
-  background-color: $purple;
+  background-color: $plum;
   height: 4rem;
   width: 100%;
 
@@ -81,7 +81,7 @@ footer {
 }
 
 .play {
-  background-color: $orange;
+  background-color: $plum;
   border-radius: 0;
   border: none;
   color: $cream;
@@ -94,7 +94,7 @@ footer {
 
 .help {
   color: $cream;
-  background-color: $green;
+  background-color: $teal;
   border: none;
   padding: 0.5rem;
   margin: 1rem 0;

@@ -1,14 +1,21 @@
-// Brand Colours
-$white: #ffffff;
+// Primary Brand Colours
 $cream: #f9f2ec;
-$orange: #ff7f30;
-$orange_dark: #cc5e20;
+$plum: #532b3a;
+$turquoise: #57b6b2;
+$teal: #025157;
+$pink: #ffb1b8;
+
+// Secondary Brand Colours
 $blue: #425cc7;
-$green: #095157;
-$purple: #532b3a;
+$orange: #ff7f30;
+
+// Utility Colours
+$white: #ffffff;
 $grey_dark: #000000e6;
 $grey_light: #3c3c3c;
 $black: #00000033;
+$teal_dark: darken($teal, 2);
+$green: #095157;
 
 $smallPhoneOnly: 349px;
 $phonePlus: 350px;
@@ -126,8 +133,8 @@ select {
 //
 
 body {
-  background-color: $purple;
-  color: $cream;
+  background-color: $pink;
+  color: $plum;
   font-family: Poppins, sans-serif;
   font-size: 100%;
 }
@@ -140,7 +147,7 @@ h1, h2, h3, h4, h5, h6 {
 
 a {
   &:focus {
-    outline: 3px solid $orange;
+    outline: 3px solid $turquoise;
     outline-offset: 3px;
   }
 }
@@ -150,7 +157,7 @@ button {
   border: none;
 
   &:focus {
-    outline: 3px solid $orange;
+    outline: 3px solid $turquoise;
     outline-offset: 3px;
   }
 }

@@ -31,9 +31,9 @@
     }
 
     button {
-      background: $orange;
+      background: $teal;
       border: none;
-      color: $orange;
+      color: $cream;
       cursor: pointer;
       height: 100%;
       font-size: 2rem;
@@ -54,11 +54,11 @@
 
     button:hover,
     button:focus {
-      background: $orange_dark;
+      background: $teal_dark;
     }
 
     button:focus {
-      outline: 1px solid $orange_dark;
+      outline: 1px solid $teal_dark;
       outline-offset: 4px;
     }
 
@@ -75,11 +75,11 @@
         animation-iteration-count: 1;
         animation-direction: normal;
         animation-delay: 0;
-        color: $white;
+        color: $cream;
       }
       button:hover,
       button:focus {
-        background: $orange;
+        background: $teal_dark;
       }
     }
   }
@@ -89,12 +89,12 @@
   0% {
     transform: rotateY(0deg);
     opacity: 0;
-    color: $orange;
+    color: $teal;
   }
 
   100% {
     transform: rotateY(180deg);
-    color: $orange;
+    color: $teal;
     opacity: 1;
   }
 }

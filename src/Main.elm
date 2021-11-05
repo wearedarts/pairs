@@ -159,7 +159,7 @@ view model =
     div [ class "page" ]
         [ header [ class "page-section" ]
             [ div [ class "container" ]
-                [ img [ src "/darts-logo-cream.svg", alt "darts" ] []
+                [ img [ src "/the-point-logo-cream.svg", alt "the point" ] []
                 ]
             ]
         , main_ [ class "page-section" ]
@@ -287,7 +287,7 @@ renderGameArea model =
 renderHelp : Model -> Html Msg
 renderHelp model =
     if model.helpClosed then
-        button [ class "help", onClick PressedHelp, ariaExpanded "false"] [ h2 [] [ text "How to play +" ] ]
+        button [ class "help", onClick PressedHelp, ariaExpanded "false" ] [ h2 [] [ text "How to play +" ] ]
 
     else
         div []
