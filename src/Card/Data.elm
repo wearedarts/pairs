@@ -21,6 +21,7 @@ availableCardSets =
     -- WARNING these need to be kept in sync with the files in `src/json`
     [ { title = "Colours", file = "set1" }
     , { title = "Artists", file = "name-artist" }
+    , { title = "Artist Tools", file = "tools" }
     ]
 
 

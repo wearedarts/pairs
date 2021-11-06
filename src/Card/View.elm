@@ -15,7 +15,7 @@ type Value
 
 stringToValueType : String -> Value
 stringToValueType aString =
-    if String.contains "card-images/" aString then
+    if String.contains ".svg" aString || String.contains ".png" aString then
         Image
 
     else
@@ -35,7 +35,7 @@ renderCardList cards =
                         [ if card.isRevealed then
                             case stringToValueType card.value of
                                 Image ->
-                                    img [ src card.value, alt card.match ] []
+                                    img [ src ("card-images/" ++ card.value), alt card.match ] []
 
                                 Text ->
                                     text card.value
