@@ -164,9 +164,9 @@ view model =
             ]
         , main_ [ class "page-section" ]
             [ div [ class "container fill-height" ]
-                [ h1 [] [ text "find the pairs" ]
+                [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    fieldset [] (legend [] [ h2 [] [ text "choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
+                    fieldset [] (legend [] [ h2 [] [ text "Choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
 
                   else
                     text ""
@@ -287,7 +287,7 @@ renderGameArea model =
 renderHelp : Model -> Html Msg
 renderHelp model =
     if model.helpClosed then
-        button [ class "help", onClick PressedHelp, ariaExpanded "false"] [ h2 [] [ text "How to play +" ] ]
+        button [ class "help", onClick PressedHelp, ariaExpanded "false" ] [ h2 [] [ text "How to play +" ] ]
 
     else
         div []
