@@ -15,7 +15,7 @@ import Random.List
 
 
 type alias Flags =
-    { cardJson : { pairsList : Decode.Value }
+    { cardJson : { pairsList : Decode.Value, title : String, help : String }
     , filename : String
     }
 
@@ -34,6 +34,7 @@ type alias Model =
     { isPlaying : Bool
     , helpClosed : Bool
     , cards : List Card
+    , cardSetMeta : { title : String, help : String }
     , selectedCardSet : String
     , cardsTried : Int
     }
@@ -44,6 +45,7 @@ init flags =
     ( { isPlaying = False
       , helpClosed = False
       , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
+      , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = flags.filename
       , cardsTried = 0
       }
@@ -287,7 +289,7 @@ renderGameArea model =
 renderHelp : Model -> Html Msg
 renderHelp model =
     if model.helpClosed then
-        button [ class "help", onClick PressedHelp, ariaExpanded "false"] [ h2 [] [ text "How to play +" ] ]
+        button [ class "help", onClick PressedHelp, ariaExpanded "false" ] [ h2 [] [ text "How to play +" ] ]
 
     else
         div []
@@ -296,8 +298,8 @@ renderHelp model =
                 text ""
 
               else
-                div []
-                    [ p [] [ text "[cCc] instructions " ]
-                    , p [] [ text "[cCc] and help" ]
+                div [ class "help-text" ]
+                    [ p [] [ text model.cardSetMeta.help ]
+                    , p [] [ text "Why not challenge yourself to guess it right first time?" ]
                     ]
             ]

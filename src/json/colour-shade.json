@@ -1,0 +1,11 @@
+{
+    "title": "Colours",
+    "help": "Match the shade to its colour by clicking on the cards",
+    "pairsList": {
+        "blue": "aqua",
+        "pink": "rose",
+        "red": "ruby",
+        "yellow": "buttercup",
+        "green": "lime"
+    }
+}
