@@ -2,9 +2,9 @@
     "title": "Artists",
     "help": "Match the artist to their name by clicking on the cards.",
     "pairsList": {
-        "Barbara": "card-images/barbara.svg",
-        "Frida": "card-images/frida.svg",
-        "Andy": "card-images/andy.svg",
-        "Vincent": "card-images/vincent.svg"
+        "Barbara": "barbara.svg",
+        "Frida": "frida.svg",
+        "Andy": "andy.svg",
+        "Vincent": "vincent.svg"
     }
 }

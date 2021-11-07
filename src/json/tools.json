@@ -1,0 +1,16 @@
+{
+    "title": "Icons",
+    "help": "Match the artists' tools by clicking on the cards.",
+    "pairsList": {
+        "binoculars-outline.png": "binoculars-solid.png",
+        "camera-outline.png": "camera-solid.png",
+        "glue-outline.png": "glue-solid.png",
+        "magnifier-outline.png": "magnifier-solid.png",
+        "palette-outline.png": "palette-solid.png",
+        "pencils-outline.png": "pencils-solid.png",
+        "roller-outline.png": "roller-solid.png",
+        "scissors-outline.png": "scissors-solid.png",
+        "thought-outline.png": "thought-solid.png",
+        "tools-outline.png": "tools-solid.png"
+    }
+}

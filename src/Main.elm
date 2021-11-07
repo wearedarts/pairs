@@ -166,9 +166,9 @@ view model =
             ]
         , main_ [ class "page-section" ]
             [ div [ class "container fill-height" ]
-                [ h1 [] [ text "find the pairs" ]
+                [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    fieldset [] (legend [] [ h2 [] [ text "choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
+                    fieldset [] (legend [] [ h2 [] [ text "Choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
 
                   else
                     text ""
