@@ -19,7 +19,7 @@ type alias SetFileMeta =
 availableCardSets : List SetFileMeta
 availableCardSets =
     -- WARNING these need to be kept in sync with the files in `src/json`
-    [ { title = "Colours", file = "set1" }
+    [ { title = "Colours", file = "colour-shade" }
     , { title = "Artists", file = "name-artist" }
     ]
 
@@ -36,15 +36,7 @@ decodeCardSet json =
             cardSet
 
         Err _ ->
-            defaultCardPairs
-
-
-defaultCardPairs : List ( String, String )
-defaultCardPairs =
-    [ ( "azure", "blue" )
-    , ( "red", "crimson" )
-    , ( "green", "emerald" )
-    ]
+            []
 
 
 initCardSet : List ( String, String ) -> List Card
