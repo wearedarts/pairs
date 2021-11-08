@@ -2,6 +2,7 @@
   display: flex;
   flex-wrap: wrap;
   margin: 0 -1rem;
+  justify-content: center;
 
   .card {
     width: calc((100% / 2));
@@ -15,7 +16,7 @@
     }
 
     @media (min-width: $tabletLandscapePlus) {
-      width: calc(100% / 5);
+      width: calc(100% / 4);
     }
 
     aspect-ratio: 1 / 1;
