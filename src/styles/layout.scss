@@ -26,6 +26,16 @@ header {
   }
 }
 
+.logo-link {
+  display: inline-block;
+  vertical-align: middle;
+
+  &:focus {
+    outline: 3px solid $pink;
+    outline-offset: 3px;
+  }
+}
+
 main {
   flex-grow: 1;
 
