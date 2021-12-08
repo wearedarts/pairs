@@ -20,9 +20,23 @@ header {
   flex-basis: 10rem;
   width: 100%;
 
+  a {
+    display: flex;
+    color: $cream;
+    font-size: 2rem;
+    text-decoration: none;
+    align-items: flex-end;
+  }
+
   img {
     display: block;
     height: 6rem;
+    padding-right: 1rem;
+  }
+
+  &:focus {
+    outline: 3px solid $pink;
+    outline-offset: 3px;
   }
 }
 
