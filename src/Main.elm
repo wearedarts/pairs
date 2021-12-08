@@ -161,7 +161,7 @@ view model =
     div [ class "page" ]
         [ header [ class "page-section" ]
             [ div [ class "container" ]
-                [ a [ href "https://darts-games.netlify.app" ]
+[ a [ href "https://darts-games.netlify.app" ]
                     [ img [ src "/the-point-logo-cream.svg", alt "the point" ] []
                     , span [] [ text "Games" ]
                     ]
