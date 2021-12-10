@@ -77,7 +77,9 @@
         animation-direction: normal;
         animation-delay: 0;
         color: $cream;
-        padding: 0 1rem;
+        // This forces short name onto 2 lines.
+        // Adding special chars to the json seems more complicated for future maintenence.
+        padding: 0 1.6rem;
       }
       button:hover,
       button:focus {
