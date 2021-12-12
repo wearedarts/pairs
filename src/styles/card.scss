@@ -5,18 +5,18 @@
   justify-content: center;
 
   .card {
-    width: calc((100% / 2));
+    width: calc((90% / 2));
 
     @media (min-width: $tabletPortraitPlus) {
-      width: calc(100% / 3);
+      width: calc(90% / 3);
     }
 
     @media (min-width: $tabletPortraitPlus) {
-      width: calc(100% / 3);
+      width: calc(90% / 3);
     }
 
     @media (min-width: $tabletLandscapePlus) {
-      width: calc(100% / 4);
+      width: calc(90% / 4);
     }
 
     aspect-ratio: 1 / 1;
@@ -82,9 +82,33 @@
       button:focus {
         background: $teal_dark;
       }
+
+      &.matched {
+        animation-name: addFrame;
+        animation-duration: 800ms;
+        animation-timing-function: ease-in;
+        animation-iteration-count: 1;
+        animation-direction: normal;
+        animation-delay: 0;
+        background: url('../assets/square-frame.svg') no-repeat $orange;
+        padding: 1.7rem;
+        margin: 0.2rem;
+        border-radius: 1.5rem;
+      }
     }
   }
 }
+
+@keyframes addFrame {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 
 @keyframes cardFlip {
   0% {
