@@ -9,6 +9,7 @@ import Html.Attributes exposing (alt, checked, class, for, href, id, src, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
@@ -17,6 +18,12 @@ import Random.List
 type alias Flags =
     { cardJson : { pairsList : Decode.Value, title : String, help : String }
     , filename : String
+    }
+
+
+type alias SoundEffect =
+    { source : String
+    , volume : Float
     }
 
 
@@ -37,6 +44,7 @@ type alias Model =
     , cardSetMeta : { title : String, help : String }
     , selectedCardSet : String
     , cardsTried : Int
+    , playedSoundEffects : List SoundEffect
     }
 
 
@@ -48,6 +56,7 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = flags.filename
       , cardsTried = 0
+      , playedSoundEffects = []
       }
     , Cmd.none
     )
@@ -92,6 +101,7 @@ update msg model =
             ( { model
                 | cards = newCardState
                 , cardsTried = model.cardsTried + 1
+                , playedSoundEffects = model.playedSoundEffects ++ [ { source = "success.mp3", volume = 0.6 } ]
               }
             , Cmd.none
             )
@@ -181,11 +191,22 @@ view model =
                     text ""
                 , renderGameArea model
                 , renderHelp model
+                , div [] (model.playedSoundEffects |> List.map renderAudio)
                 ]
             ]
         , footer [ class "page-section" ]
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
+
+
+renderAudio : SoundEffect -> Html Msg
+renderAudio soundEffect =
+    Html.audio
+        [ Html.Attributes.controls False
+        , Html.Attributes.autoplay True
+        , Html.Attributes.property "volume" (Encode.string (String.fromFloat soundEffect.volume))
+        ]
+        [ Html.source [ src soundEffect.source ] [] ]
 
 
 renderCardSetRadios : String -> List (Html Msg)
