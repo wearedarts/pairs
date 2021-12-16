@@ -20,23 +20,30 @@ header {
   flex-basis: 10rem;
   width: 100%;
 
-  a {
+  .container {
     display: flex;
+    justify-content: space-between;
+  }
+
+  a {
+    display: block;
     color: $cream;
     font-size: 2rem;
     text-decoration: none;
-    align-items: flex-end;
+
+    &:focus {
+      outline: 3px solid $pink;
+      outline-offset: 3px;
+    }
   }
 
   img {
     display: block;
     height: 6rem;
-    padding-right: 1rem;
   }
 
-  &:focus {
-    outline: 3px solid $pink;
-    outline-offset: 3px;
+  .more-games {
+    align-self: end;
   }
 }
 
