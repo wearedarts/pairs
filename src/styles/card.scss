@@ -50,17 +50,13 @@
       width: 100%;
       word-break: break-word;
 
-
       @media (min-width: $tabletPortraitPlus) {
-        font-size: 150%;
+        font-size: 130%;
       }
 
       @media (min-width: $tabletLandscapePlus) {
-        font-size: 200%;
+        font-size: 150%;
       }
-
-    img {
-      margin: auto;
     }
 
     button:hover:not([disabled]),
@@ -78,7 +74,6 @@
     }
 
     img {
-      height: 90%;
       margin: auto;
     }
 
@@ -91,14 +86,7 @@
         animation-iteration-count: 1;
         animation-direction: normal;
         animation-delay: 0s;
-        color: $cream;
-        // This forces short name onto 2 lines.
-        // Adding special chars to the json seems more complicated for future maintenance.
-        padding: 0 1.6rem;
-      }
-      button:hover,
-      button:focus {
-        background: $teal_dark;
+        padding: 0 0.5rem;
       }
     }
 
