@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, fieldset, footer, h1, h2, h3, header, img, input, label, legend, main_, p, text)
+import Html exposing (Html, a, button, div, fieldset, footer, h1, h2, h3, header, img, input, label, legend, main_, p, span, text)
 import Html.Attributes exposing (alt, checked, class, for, href, id, src, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
@@ -171,9 +171,11 @@ view model =
     div [ class "page" ]
         [ header [ class "page-section" ]
             [ div [ class "container" ]
-                [ a [ href "https://darts-games.netlify.app/", class "logo-link" ]
+                [ a [ href "/" ]
                     [ img [ src "/the-point-logo-cream.svg", alt "the point" ] []
                     ]
+                , a [ href "https://darts-games.netlify.app/", class "more-games" ]
+                    [ text "More Games" ]
                 ]
             ]
         , main_ [ class "page-section" ]

@@ -2,9 +2,11 @@
     "title": "Artists",
     "help": "Match the artist to their name by clicking on the cards.",
     "pairsList": {
-        "Barbara": "barbara.svg",
-        "Frida": "frida.svg",
-        "Andy": "andy.svg",
-        "Vincent": "vincent.svg"
+        "Barbara Hepworth": "barbara.svg",
+        "Frida Kahlo": "frida.svg",
+        "Andy Warhol": "andy.svg",
+        "Vincent van Gogh": "vincent.svg",
+        "Yinka Shonibare": "yinka.svg",
+        "Georgia O'Keeffe": "georgia.svg"
     }
 }

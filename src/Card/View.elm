@@ -22,12 +22,27 @@ stringToValueType aString =
         Text
 
 
+matched : List Card -> Card -> Bool
+matched cards card =
+    (List.filter (\aCard -> aCard.isRevealed) cards
+        |> List.filter (\aCard -> aCard.value == card.match)
+        |> List.length
+    )
+        == 1
+
+
 renderCardList : List Card -> Html Msg
 renderCardList cards =
     ul [ class "cards" ]
         (List.map
             (\card ->
-                li [ class "card", classList [ ( "revealed", card.isRevealed ) ] ]
+                li
+                    [ class "card"
+                    , classList
+                        [ ( "revealed", card.isRevealed )
+                        , ( "matched", card.isRevealed && matched cards card )
+                        ]
+                    ]
                     [ button
                         [ onClick (SelectedCard card)
                         , disabled card.isRevealed
