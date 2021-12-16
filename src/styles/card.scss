@@ -49,7 +49,6 @@
     }
 
     img {
-      height: 90%;
       margin: auto;
     }
 
@@ -77,6 +76,9 @@
         animation-direction: normal;
         animation-delay: 0;
         color: $cream;
+        // This forces short name onto 2 lines.
+        // Adding special chars to the json seems more complicated for future maintenance.
+        padding: 0 1.6rem;
       }
       button:hover,
       button:focus {
