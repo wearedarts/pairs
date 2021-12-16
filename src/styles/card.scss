@@ -5,23 +5,25 @@
   justify-content: center;
 
   .card {
-    width: calc((90% / 2));
+    aspect-ratio: 1 / 1;
+    padding: calc(100% / 2 * 0.15);
+    overflow: hidden;
+    width: calc((100% / 2));
 
     @media (min-width: $tabletPortraitPlus) {
-      width: calc(90% / 3);
+      padding: calc(100% / 3 * 0.15);
+      width: calc(100% / 3);
     }
 
     @media (min-width: $tabletPortraitPlus) {
-      width: calc(90% / 3);
+      padding: calc(100% / 3 * 0.15);
+      width: calc(100% / 3);
     }
 
     @media (min-width: $tabletLandscapePlus) {
-      width: calc(90% / 4);
+      padding: calc(100% / 4 * 0.15);
+      width: calc(100% / 4);
     }
-
-    aspect-ratio: 1 / 1;
-    padding: 1rem;
-    overflow: hidden;
 
     .reverse {
       width: 100%;
@@ -32,28 +34,32 @@
     }
 
     button {
+      -moz-appearance: none;
+      -webkit-appearance: none;
       background: $teal;
       border: none;
       color: $cream;
       cursor: pointer;
+      font-size: 120%;
       height: 100%;
-      font-size: 2rem;
       margin: 0;
-      padding: 0;
-      text-decoration: none;
-      text-align: center;
-      width: 100%;
-      -webkit-appearance: none;
-      -moz-appearance: none;
       overflow: hidden;
+      padding: 0;
+      text-align: center;
+      text-decoration: none;
+      width: 100%;
+      word-break: break-word;
+
+      @media (min-width: $tabletPortraitPlus) {
+        font-size: 150%;
+      }
+
+      @media (min-width: $tabletLandscapePlus) {
+        font-size: 200%;
+      }
     }
 
-    img {
-      height: 90%;
-      margin: auto;
-    }
-
-    button:hover,
+    button:hover:not([disabled]),
     button:focus {
       background: $teal_dark;
     }
@@ -67,6 +73,11 @@
       transform: scale(0.99);
     }
 
+    img {
+      height: 90%;
+      margin: auto;
+    }
+
     &.revealed {
       button {
         cursor: unset;
@@ -75,26 +86,19 @@
         animation-timing-function: ease-in;
         animation-iteration-count: 1;
         animation-direction: normal;
-        animation-delay: 0;
-        color: $cream;
+        animation-delay: 0s;
       }
-      button:hover,
-      button:focus {
-        background: $teal_dark;
-      }
+    }
 
-      &.matched {
-        animation-name: addFrame;
-        animation-duration: 800ms;
-        animation-timing-function: ease-in;
-        animation-iteration-count: 1;
-        animation-direction: normal;
-        animation-delay: 0;
-        background: url('../assets/square-frame.svg') no-repeat $orange;
-        padding: 1.7rem;
-        margin: 0.2rem;
-        border-radius: 1.5rem;
-      }
+    &.matched {
+      animation-name: addFrame;
+      animation-duration: 800ms;
+      animation-timing-function: ease-in;
+      animation-iteration-count: 1;
+      animation-direction: normal;
+      animation-delay: 0s;
+      background: url('../assets/square-frame-colour.svg') no-repeat;
+      background-position: center;
     }
   }
 }
@@ -108,7 +112,6 @@
     opacity: 1;
   }
 }
-
 
 @keyframes cardFlip {
   0% {
