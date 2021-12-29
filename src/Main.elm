@@ -182,7 +182,7 @@ view model =
                     [ img [ src "/the-point-logo-cream.svg", alt "the point" ] []
                     ]
                 , a [ href "https://darts-games.netlify.app/", class "more-games" ]
-                    [ text "More games" ]
+                    [ text "More Games" ]
                 ]
             ]
         , main_ [ class "page-section" ]
