@@ -102,16 +102,31 @@ footer {
   width: 100%;
 }
 
+.text-center {
+  text-align: center;
+}
+
+.choose-again,
+.restart,
 .play {
   background-color: $plum;
   border-radius: 0;
   border: none;
   color: $cream;
+  font-weight: bold;
+  padding: 0.5rem;
+}
+
+.choose-again,
+.restart {
+  font-size: 1rem;
+  margin: 1rem;
+}
+
+.play {
   display: block;
   font-size: 1.8rem;
-  font-weight: bold;
   margin: 2rem auto;
-  padding: 0.5rem;
 }
 
 fieldset input {

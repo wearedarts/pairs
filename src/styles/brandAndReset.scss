@@ -155,6 +155,7 @@ a {
 button {
   border-radius: 0;
   border: none;
+  cursor: pointer;
 
   &:focus {
     outline: 3px solid $turquoise;
