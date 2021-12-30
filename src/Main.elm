@@ -64,6 +64,23 @@ update msg model =
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
             )
 
+        PressedStartAgain ->
+            ( { model
+                | isPlaying = True
+                , helpClosed = True
+              }
+            , Random.generate ShuffledCards
+                (Random.List.shuffle
+                    (List.map
+                        (\card -> { card | isRevealed = False })
+                        model.cards
+                    )
+                )
+            )
+
+        PressedChooseAnother ->
+            ( { model | isPlaying = False }, Cmd.none )
+
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
 
@@ -177,7 +194,11 @@ view model =
                   else
                     text ""
                 , if model.isPlaying then
-                    renderScore model
+                    div [ class "text-center" ]
+                        [ button [ class "restart", onClick PressedStartAgain ] [ text "Shuffle and start again" ]
+                        , button [ class "choose-again", onClick PressedChooseAnother ] [ text "Choose new cards" ]
+                        , renderScore model
+                        ]
 
                   else
                     text ""
@@ -223,7 +244,7 @@ renderScore model =
         pairs =
             pairsFound (revealedCards model.cards)
     in
-    h3 []
+    div []
         [ text
             ("You've taken "
                 ++ turnsToString turns
