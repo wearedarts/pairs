@@ -110,10 +110,7 @@ updateSoundEffects : Card -> Model -> List SoundEffect
 updateSoundEffects selectedCard model =
     if modBy 2 model.cardsTried /= 0 then
         model.playedSoundEffects
-            ++ [ { source = getSound model.cards selectedCard
-                 , volume = 0.6
-                 }
-               ]
+            ++ newSoundEffects model.cards selectedCard
 
     else
         model.playedSoundEffects
@@ -138,12 +135,21 @@ updateCardState selectedCard oldCardState =
         oldCardState
 
 
-getSound oldCardState selectedCard =
+newSoundEffects : List Card -> Card -> List SoundEffect
+newSoundEffects oldCardState selectedCard =
     if matched oldCardState selectedCard then
-        "success.ogg"
+        if
+            List.length (revealedCards oldCardState)
+                + 1
+                == List.length oldCardState
+        then
+            [ { source = "win.wav", volume = 0.6 } ]
+
+        else
+            [ { source = "success.ogg", volume = 0.6 } ]
 
     else
-        "failure.ogg"
+        [ { source = "failure.ogg", volume = 0.6 } ]
 
 
 revealedCards : List Card -> List Card
