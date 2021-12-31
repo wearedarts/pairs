@@ -12,16 +12,17 @@ type alias Card =
 
 type alias SetFileMeta =
     { title : String
+    , iconSrc : String
     , file : String
     }
 
 
 availableCardSets : List SetFileMeta
 availableCardSets =
-    -- WARNING these need to be kept in sync with the files in `src/json`
-    [ { title = "Colours", file = "colour-shade" }
-    , { title = "Artists", file = "name-artist" }
-    , { title = "Artist tools", file = "tools" }
+    -- WARNING title & file need to be in sync with the files in `src/json`
+    [ { title = "Colours", iconSrc = "colours-set.png", file = "colour-shade" }
+    , { title = "Artists", iconSrc = "artists-set.png", file = "name-artist" }
+    , { title = "Artist tools", iconSrc = "tools-set.png", file = "tools" }
     ]
 
 

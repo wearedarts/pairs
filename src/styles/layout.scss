@@ -52,20 +52,53 @@ main {
 
   h1 {
     font-size: 2.5rem;
-    text-align: center;
     margin: 2rem 0;
+    text-align: center;
   }
 
   h2 {
     font-size: 1.8rem;
     margin: 1rem 0;
+    text-align: center;
   }
 
-  fieldset {
-    border: none;
-    margin: 0;
-    padding: 0;
-    text-align: center;
+  .card-set-choices {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    width: 100%;
+
+    li a {
+      background-color: $cream;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      font-size: 1.5rem;
+      font-weight: bold;
+      height: 100%;
+      -webkit-box-pack: justify;
+      justify-content: space-between;
+      text-align: center;
+      text-decoration: none;
+      overflow: auto;
+      padding: 6px;
+
+      img {
+        width: 16rem;
+      }
+    }
+
+    li a.is-selected,
+    li a:active {
+      border: solid 6px $plum;
+    }
+
+    li a:hover,
+    li a:focus {
+      border: solid 6px $turquoise;
+    }
   }
 }
 
@@ -127,10 +160,6 @@ footer {
   display: block;
   font-size: 1.8rem;
   margin: 2rem auto;
-}
-
-fieldset input {
-  margin-left: 1rem;
 }
 
 .help {
