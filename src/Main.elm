@@ -223,7 +223,7 @@ renderCardSetList selectedCardSet =
                     [ classList [ ( "is-selected", file == selectedCardSet ) ]
                     , onClick (SelectedCardSet file)
                     ]
-                    [ img [ src iconSrc ] [], div [] [ text title ] ]
+                    [ img [ src iconSrc, alt "" ] [], div [] [ text title ] ]
                 ]
         )
         availableCardSets
