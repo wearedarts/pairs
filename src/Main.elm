@@ -9,6 +9,7 @@ import Html.Attributes exposing (alt, checked, class, for, href, id, src, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
@@ -17,6 +18,12 @@ import Random.List
 type alias Flags =
     { cardJson : { pairsList : Decode.Value, title : String, help : String }
     , filename : String
+    }
+
+
+type alias SoundEffect =
+    { source : String
+    , volume : Float
     }
 
 
@@ -37,6 +44,7 @@ type alias Model =
     , cardSetMeta : { title : String, help : String }
     , selectedCardSet : String
     , cardsTried : Int
+    , playedSoundEffects : List SoundEffect
     }
 
 
@@ -48,6 +56,7 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = flags.filename
       , cardsTried = 0
+      , playedSoundEffects = []
       }
     , Cmd.none
     )
@@ -87,31 +96,60 @@ update msg model =
         PressedHelp ->
             ( { model | helpClosed = not model.helpClosed }, Cmd.none )
 
-        SelectedCard card ->
-            let
-                newCardState =
-                    List.map
-                        (\aCard ->
-                            if card == aCard then
-                                showCard aCard
-
-                            else if
-                                cardsIsEven (revealedCards model.cards)
-                                    && notMatched model.cards aCard
-                            then
-                                hideCard aCard
-
-                            else
-                                aCard
-                        )
-                        model.cards
-            in
+        SelectedCard selectedCard ->
             ( { model
-                | cards = newCardState
+                | cards = updateCardState selectedCard model.cards
                 , cardsTried = model.cardsTried + 1
+                , playedSoundEffects = updateSoundEffects selectedCard model
               }
             , Cmd.none
             )
+
+
+updateSoundEffects : Card -> Model -> List SoundEffect
+updateSoundEffects selectedCard model =
+    if modBy 2 model.cardsTried /= 0 then
+        model.playedSoundEffects
+            ++ newSoundEffects model.cards selectedCard
+
+    else
+        model.playedSoundEffects
+
+
+updateCardState : Card -> List Card -> List Card
+updateCardState selectedCard oldCardState =
+    List.map
+        (\aCard ->
+            if selectedCard == aCard then
+                showCard aCard
+
+            else if
+                cardsIsEven (revealedCards oldCardState)
+                    && notMatched oldCardState aCard
+            then
+                hideCard aCard
+
+            else
+                aCard
+        )
+        oldCardState
+
+
+newSoundEffects : List Card -> Card -> List SoundEffect
+newSoundEffects oldCardState selectedCard =
+    if matched oldCardState selectedCard then
+        if
+            List.length (revealedCards oldCardState)
+                + 1
+                == List.length oldCardState
+        then
+            [ { source = "win.wav", volume = 0.6 } ]
+
+        else
+            [ { source = "success.ogg", volume = 0.6 } ]
+
+    else
+        [ { source = "failure.ogg", volume = 0.6 } ]
 
 
 revealedCards : List Card -> List Card
@@ -204,6 +242,7 @@ view model =
                     text ""
                 , renderGameArea model
                 , renderHelp model
+                , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
             ]
         , footer [ class "page-section" ]
@@ -328,3 +367,13 @@ renderHelp model =
                     , p [] [ text "Why not challenge yourself to guess it right first time?" ]
                     ]
             ]
+
+
+renderAudio : SoundEffect -> Html Msg
+renderAudio soundEffect =
+    Html.audio
+        [ Html.Attributes.controls False
+        , Html.Attributes.autoplay True
+        , Html.Attributes.property "volume" (Encode.string (String.fromFloat soundEffect.volume))
+        ]
+        [ Html.source [ src soundEffect.source ] [] ]
