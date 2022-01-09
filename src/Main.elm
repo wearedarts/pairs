@@ -219,7 +219,7 @@ renderCardSetList selectedCardSet =
     List.map
         (\{ title, iconSrc, file } ->
             li []
-                [ a
+                [ button
                     [ classList [ ( "is-selected", file == selectedCardSet ) ]
                     , onClick (SelectedCardSet file)
                     ]
