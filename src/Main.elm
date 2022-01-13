@@ -4,8 +4,8 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, fieldset, footer, h1, h2, h3, header, img, input, label, legend, main_, p, span, text)
-import Html.Attributes exposing (alt, checked, class, for, href, id, src, type_)
+import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
+import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
@@ -227,7 +227,10 @@ view model =
             [ div [ class "container fill-height" ]
                 [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    fieldset [] (legend [] [ h2 [] [ text "Choose a set" ] ] :: renderCardSetRadios model.selectedCardSet)
+                    div []
+                        [ h2 [] [ text "Choose a set" ]
+                        , ul [ class "card-set-choices" ] (renderCardSetList model.selectedCardSet)
+                        ]
 
                   else
                     text ""
@@ -250,26 +253,19 @@ view model =
         ]
 
 
-renderCardSetRadios : String -> List (Html Msg)
-renderCardSetRadios selectedCardSet =
+renderCardSetList : String -> List (Html Msg)
+renderCardSetList selectedCardSet =
     List.map
-        (\{ title, file } ->
-            let
-                titleId =
-                    String.toLower (String.replace " " "" title)
-            in
-            [ input
-                [ type_ "radio"
-                , onClick (SelectedCardSet file)
-                , checked (file == selectedCardSet)
-                , id titleId
+        (\{ title, iconSrc, file } ->
+            li []
+                [ button
+                    [ classList [ ( "is-selected", file == selectedCardSet ) ]
+                    , onClick (SelectedCardSet file)
+                    ]
+                    [ img [ src iconSrc, alt "" ] [], div [] [ text title ] ]
                 ]
-                []
-            , label [ for titleId ] [ text title ]
-            ]
         )
         availableCardSets
-        |> List.concat
 
 
 renderScore : Model -> Html Msg
