@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation
-import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
+import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
 import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, type_)
@@ -42,7 +42,7 @@ type alias Model =
     , helpClosed : Bool
     , cards : List Card
     , cardSetMeta : { title : String, help : String }
-    , selectedCardSet : String
+    , selectedCardSet : { title : String, level : Maybe Level }
     , cardsTried : Int
     , playedSoundEffects : List SoundEffect
     }
@@ -54,7 +54,7 @@ init flags =
       , helpClosed = False
       , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
-      , selectedCardSet = flags.filename
+      , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
       , playedSoundEffects = []
       }
@@ -67,6 +67,12 @@ update msg model =
     case msg of
         SelectedCardSet setName ->
             ( model, Browser.Navigation.load ("?set=" ++ setName) )
+
+        SelectedLevel level ->
+            update PressedPlay
+                { model
+                    | selectedCardSet = updateLevel level model.selectedCardSet
+                }
 
         PressedPlay ->
             ( { model | isPlaying = True, helpClosed = True }
@@ -88,7 +94,7 @@ update msg model =
             )
 
         PressedChooseAnother ->
-            ( { model | isPlaying = False }, Cmd.none )
+            ( model, Browser.Navigation.load "/" )
 
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
@@ -104,6 +110,14 @@ update msg model =
               }
             , Cmd.none
             )
+
+
+updateLevel :
+    Level
+    -> { title : String, level : Maybe Level }
+    -> { title : String, level : Maybe Level }
+updateLevel newLevel cardSet =
+    { cardSet | level = Just newLevel }
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -227,16 +241,34 @@ view model =
             [ div [ class "container fill-height" ]
                 [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    div []
-                        [ h2 [] [ text "Choose a set" ]
-                        , ul [ class "card-set-choices" ] (renderCardSetList model.selectedCardSet)
-                        ]
+                    if model.selectedCardSet.title == "empty" then
+                        div []
+                            [ h2 [] [ text "Choose a set" ]
+                            , ul [ class "card-set-choices" ]
+                                (renderCardSetList model.selectedCardSet)
+                            ]
+
+                    else
+                        div [ class "text-center" ]
+                            [ h2 [] [ text ("of " ++ model.cardSetMeta.title) ]
+                            , button
+                                [ class "choose-again"
+                                , onClick PressedChooseAnother
+                                ]
+                                [ text "Choose another set" ]
+                            , h2 [] [ text "Choose a level" ]
+                            , ul [ class "card-set-choices" ] renderLevelList
+                            ]
 
                   else
                     text ""
                 , if model.isPlaying then
                     div [ class "text-center" ]
-                        [ button [ class "restart", onClick PressedStartAgain ] [ text "Shuffle and start again" ]
+                        [ button
+                            [ class "restart"
+                            , onClick PressedStartAgain
+                            ]
+                            [ text "Shuffle and start again" ]
                         , button [ class "choose-again", onClick PressedChooseAnother ] [ text "Choose new cards" ]
                         , renderScore model
                         ]
@@ -253,13 +285,21 @@ view model =
         ]
 
 
-renderCardSetList : String -> List (Html Msg)
-renderCardSetList selectedCardSet =
+renderLevelList : List (Html Msg)
+renderLevelList =
+    [ li [] [ button [ onClick (SelectedLevel Easy) ] [ text "Easy" ] ]
+    , li [] [ button [ onClick (SelectedLevel Medium) ] [ text "Medium" ] ]
+    , li [] [ button [ onClick (SelectedLevel Hard) ] [ text "Hard" ] ]
+    ]
+
+
+renderCardSetList : { title : String, level : Maybe Level } -> List (Html Msg)
+renderCardSetList selectedCardSetOptions =
     List.map
         (\{ title, iconSrc, file } ->
             li []
                 [ button
-                    [ classList [ ( "is-selected", file == selectedCardSet ) ]
+                    [ classList [ ( "is-selected", file == selectedCardSetOptions.title ) ]
                     , onClick (SelectedCardSet file)
                     ]
                     [ img [ src iconSrc, alt "" ] [], div [] [ text title ] ]
@@ -339,11 +379,11 @@ successToString turnsTaken pairs =
 
 renderGameArea : Model -> Html Msg
 renderGameArea model =
-    if not model.isPlaying then
-        button [ onClick PressedPlay, class "play" ] [ text "Shuffle & Play!" ]
+    if model.isPlaying then
+        renderCardList model.cards
 
     else
-        renderCardList model.cards
+        text ""
 
 
 renderHelp : Model -> Html Msg
