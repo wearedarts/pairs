@@ -5,7 +5,7 @@ import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
-import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, type_)
+import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, style, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
@@ -250,14 +250,22 @@ view model =
 
                     else
                         div [ class "text-center" ]
-                            [ h2 [] [ text ("of " ++ model.cardSetMeta.title) ]
-                            , button
-                                [ class "choose-again"
-                                , onClick PressedChooseAnother
+                            [ h2 [ style "margin-top" "-25px" ] [ text ("of " ++ model.cardSetMeta.title) ]
+                            , div []
+                                [ button
+                                    [ class "choose-again"
+                                    , onClick PressedChooseAnother
+                                    ]
+                                    [ text "Choose another set" ]
                                 ]
-                                [ text "Choose another set" ]
-                            , h2 [] [ text "Choose a level" ]
-                            , ul [ class "card-set-choices" ] renderLevelList
+                            , img
+                                [ class "chosen-set"
+                                , src (getSelectedIconSrc model.cardSetMeta.title)
+                                , alt ""
+                                ]
+                                []
+                            , h2 [] [ text "Choose a level to play" ]
+                            , ul [ class "level-choices" ] renderLevelList
                             ]
 
                   else
@@ -283,6 +291,20 @@ view model =
         , footer [ class "page-section" ]
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
+
+
+getSelectedIconSrc : String -> String
+getSelectedIconSrc title =
+    let
+        match =
+            List.filter (\item -> item.title == title) availableCardSets
+    in
+    case List.head match of
+        Nothing ->
+            ""
+
+        Just cardMeta ->
+            cardMeta.iconSrc
 
 
 renderLevelList : List (Html Msg)
