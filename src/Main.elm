@@ -50,15 +50,19 @@ type alias Model =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
+    let
+        decodedCards =
+            initCardSet (decodeCardSet flags.cardJson.pairsList)
+    in
     ( { isPlaying = False
       , helpClosed = False
-      , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
+      , cards = decodedCards
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
       , playedSoundEffects = []
       }
-    , Cmd.none
+    , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
     )
 
 
@@ -71,7 +75,8 @@ update msg model =
         SelectedLevel level ->
             update PressedPlay
                 { model
-                    | selectedCardSet = updateLevel level model.selectedCardSet
+                    | cards = getCardsByLevel level model.cards
+                    , selectedCardSet = updateLevel level model.selectedCardSet
                 }
 
         PressedPlay ->
@@ -118,6 +123,29 @@ updateLevel :
     -> { title : String, level : Maybe Level }
 updateLevel newLevel cardSet =
     { cardSet | level = Just newLevel }
+
+
+maxEasyCount : Int
+maxEasyCount =
+    8
+
+
+maxMediumCount : Int
+maxMediumCount =
+    12
+
+
+getCardsByLevel : Level -> List Card -> List Card
+getCardsByLevel level allCards =
+    case level of
+        Easy ->
+            List.take maxEasyCount allCards
+
+        Medium ->
+            List.take maxMediumCount allCards
+
+        Hard ->
+            allCards
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -265,7 +293,7 @@ view model =
                                 ]
                                 []
                             , h2 [] [ text "Choose a level to play" ]
-                            , ul [ class "level-choices" ] renderLevelList
+                            , ul [ class "level-choices" ] (renderLevelList model.cards)
                             ]
 
                   else
@@ -301,17 +329,25 @@ getSelectedIconSrc title =
     in
     case List.head match of
         Nothing ->
-            ""
+            "point-card-back.png"
 
         Just cardMeta ->
             cardMeta.iconSrc
 
 
-renderLevelList : List (Html Msg)
-renderLevelList =
+renderLevelList : List Card -> List (Html Msg)
+renderLevelList cards =
     [ li [] [ button [ onClick (SelectedLevel Easy) ] [ text "Easy" ] ]
-    , li [] [ button [ onClick (SelectedLevel Medium) ] [ text "Medium" ] ]
-    , li [] [ button [ onClick (SelectedLevel Hard) ] [ text "Hard" ] ]
+    , if List.length cards > maxEasyCount then
+        li [] [ button [ onClick (SelectedLevel Medium) ] [ text "Medium" ] ]
+
+      else
+        text ""
+    , if List.length cards > maxMediumCount then
+        li [] [ button [ onClick (SelectedLevel Hard) ] [ text "Hard" ] ]
+
+      else
+        text ""
     ]
 
 

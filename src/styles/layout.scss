@@ -68,7 +68,6 @@ main {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-evenly;
     width: 100%;
 
     li button {
@@ -101,7 +100,16 @@ main {
     }
   }
 
+  .level-choices {
+    justify-content: center;
+    li {
+        margin: 0 1rem;
+    }
+  }
+
   .card-set-choices {
+    justify-content: space-evenly;
+
     li {
       margin-bottom: 2rem;
       button {
