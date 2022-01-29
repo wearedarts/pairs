@@ -4,19 +4,23 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
-import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, type_)
-import Html.Attributes.Aria exposing (..)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, text, ul)
+import Html.Attributes exposing (alt, class, classList, href, src)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
+import Toasty
 
 
 type alias Flags =
-    { cardJson : { pairsList : Decode.Value, title : String, help : String }
+    { cardJson :
+        { pairsList : Decode.Value
+        , title : String
+        , help : String
+        }
     , filename : String
     }
 
@@ -39,11 +43,14 @@ main =
 
 type alias Model =
     { isPlaying : Bool
-    , helpClosed : Bool
     , cards : List Card
-    , cardSetMeta : { title : String, help : String }
+    , cardSetMeta :
+        { title : String
+        , help : String
+        }
     , selectedCardSet : String
     , cardsTried : Int
+    , toasties : Toasty.Stack String
     , playedSoundEffects : List SoundEffect
     }
 
@@ -51,33 +58,33 @@ type alias Model =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { isPlaying = False
-      , helpClosed = False
       , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = flags.filename
       , cardsTried = 0
+      , toasties = Toasty.initialState
       , playedSoundEffects = []
       }
     , Cmd.none
     )
+        |> Toasty.addPersistentToast toastyConfig ShowSpeech flags.cardJson.help
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SelectedCardSet setName ->
-            ( model, Browser.Navigation.load ("?set=" ++ setName) )
+            ( model
+            , Browser.Navigation.load ("?set=" ++ setName)
+            )
 
         PressedPlay ->
-            ( { model | isPlaying = True, helpClosed = True }
+            ( { model | isPlaying = True }
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
             )
 
         PressedStartAgain ->
-            ( { model
-                | isPlaying = True
-                , helpClosed = True
-              }
+            ( { model | isPlaying = True }
             , Random.generate ShuffledCards
                 (Random.List.shuffle
                     (List.map
@@ -93,9 +100,6 @@ update msg model =
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
 
-        PressedHelp ->
-            ( { model | helpClosed = not model.helpClosed }, Cmd.none )
-
         SelectedCard selectedCard ->
             ( { model
                 | cards = updateCardState selectedCard model.cards
@@ -104,6 +108,28 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ShowSpeech subMsg ->
+            Toasty.update toastyConfig ShowSpeech subMsg model
+
+
+toastyConfig : Toasty.Config Msg
+toastyConfig =
+    Toasty.config
+        |> Toasty.transitionOutDuration 100
+        |> Toasty.delay 8000
+        |> Toasty.containerAttrs speechContainerStyles
+        |> Toasty.itemAttrs speechBubbleStyles
+
+
+speechContainerStyles : List (Html.Attribute Msg)
+speechContainerStyles =
+    []
+
+
+speechBubbleStyles : List (Html.Attribute Msg)
+speechBubbleStyles =
+    []
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -244,7 +270,7 @@ view model =
                   else
                     text ""
                 , renderGameArea model
-                , renderHelp model
+                , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
             ]
@@ -346,23 +372,9 @@ renderGameArea model =
         renderCardList model.cards
 
 
-renderHelp : Model -> Html Msg
-renderHelp model =
-    if model.helpClosed then
-        button [ class "help", onClick PressedHelp, ariaExpanded "false" ] [ h2 [] [ text "How to play +" ] ]
-
-    else
-        div []
-            [ button [ class "help", onClick PressedHelp, ariaExpanded "true" ] [ h2 [] [ text "How to play -" ] ]
-            , if model.helpClosed then
-                text ""
-
-              else
-                div [ class "help-text" ]
-                    [ p [] [ text model.cardSetMeta.help ]
-                    , p [] [ text "Why not challenge yourself to guess it right first time?" ]
-                    ]
-            ]
+renderArtistSpeech : String -> Html Msg
+renderArtistSpeech speech =
+    div [] [ text speech ]
 
 
 renderAudio : SoundEffect -> Html Msg
