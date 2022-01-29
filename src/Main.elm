@@ -124,7 +124,7 @@ toastyConfig =
 
 speechContainerStyles : List (Html.Attribute Msg)
 speechContainerStyles =
-    []
+    [ class "toast container" ]
 
 
 speechBubbleStyles : List (Html.Attribute Msg)
@@ -255,6 +255,7 @@ view model =
                 , if not model.isPlaying then
                     div []
                         [ h2 [] [ text "Choose a set" ]
+                        , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
                         , ul [ class "card-set-choices" ] (renderCardSetList model.selectedCardSet)
                         ]
 
@@ -270,7 +271,6 @@ view model =
                   else
                     text ""
                 , renderGameArea model
-                , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
             ]
@@ -374,7 +374,10 @@ renderGameArea model =
 
 renderArtistSpeech : String -> Html Msg
 renderArtistSpeech speech =
-    div [] [ text speech ]
+    div [ class "artist-speech container" ]
+        [ img [ class "artist", src "card-images/barbara.svg" ] []
+        , div [ class "speech right" ] [ text speech ]
+        ]
 
 
 renderAudio : SoundEffect -> Html Msg
