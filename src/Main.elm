@@ -2,10 +2,10 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation
-import Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
+import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
 import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
-import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, type_)
+import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, style, type_)
 import Html.Attributes.Aria exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
@@ -42,7 +42,7 @@ type alias Model =
     , helpClosed : Bool
     , cards : List Card
     , cardSetMeta : { title : String, help : String }
-    , selectedCardSet : String
+    , selectedCardSet : { title : String, level : Maybe Level }
     , cardsTried : Int
     , playedSoundEffects : List SoundEffect
     }
@@ -50,15 +50,19 @@ type alias Model =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
+    let
+        decodedCards =
+            initCardSet (decodeCardSet flags.cardJson.pairsList)
+    in
     ( { isPlaying = False
       , helpClosed = False
-      , cards = initCardSet (decodeCardSet flags.cardJson.pairsList)
+      , cards = decodedCards
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
-      , selectedCardSet = flags.filename
+      , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
       , playedSoundEffects = []
       }
-    , Cmd.none
+    , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
     )
 
 
@@ -67,6 +71,13 @@ update msg model =
     case msg of
         SelectedCardSet setName ->
             ( model, Browser.Navigation.load ("?set=" ++ setName) )
+
+        SelectedLevel level ->
+            update PressedPlay
+                { model
+                    | cards = getCardsByLevel level model.cards
+                    , selectedCardSet = updateLevel level model.selectedCardSet
+                }
 
         PressedPlay ->
             ( { model | isPlaying = True, helpClosed = True }
@@ -88,7 +99,7 @@ update msg model =
             )
 
         PressedChooseAnother ->
-            ( { model | isPlaying = False }, Cmd.none )
+            ( model, Browser.Navigation.load "/" )
 
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
@@ -104,6 +115,37 @@ update msg model =
               }
             , Cmd.none
             )
+
+
+updateLevel :
+    Level
+    -> { title : String, level : Maybe Level }
+    -> { title : String, level : Maybe Level }
+updateLevel newLevel cardSet =
+    { cardSet | level = Just newLevel }
+
+
+maxEasyCount : Int
+maxEasyCount =
+    8
+
+
+maxMediumCount : Int
+maxMediumCount =
+    12
+
+
+getCardsByLevel : Level -> List Card -> List Card
+getCardsByLevel level allCards =
+    case level of
+        Easy ->
+            List.take maxEasyCount allCards
+
+        Medium ->
+            List.take maxMediumCount allCards
+
+        Hard ->
+            allCards
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -227,16 +269,42 @@ view model =
             [ div [ class "container fill-height" ]
                 [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    div []
-                        [ h2 [] [ text "Choose a set" ]
-                        , ul [ class "card-set-choices" ] (renderCardSetList model.selectedCardSet)
-                        ]
+                    if model.selectedCardSet.title == "empty" then
+                        div []
+                            [ h2 [] [ text "Choose a set" ]
+                            , ul [ class "card-set-choices" ]
+                                (renderCardSetList model.selectedCardSet)
+                            ]
+
+                    else
+                        div [ class "text-center" ]
+                            [ h2 [ style "margin-top" "-25px" ] [ text ("of " ++ model.cardSetMeta.title) ]
+                            , div []
+                                [ button
+                                    [ class "choose-again"
+                                    , onClick PressedChooseAnother
+                                    ]
+                                    [ text "Choose another set" ]
+                                ]
+                            , img
+                                [ class "chosen-set"
+                                , src (getSelectedIconSrc model.cardSetMeta.title)
+                                , alt ""
+                                ]
+                                []
+                            , h2 [] [ text "Choose a level to play" ]
+                            , ul [ class "level-choices" ] (renderLevelList model.cards)
+                            ]
 
                   else
                     text ""
                 , if model.isPlaying then
                     div [ class "text-center" ]
-                        [ button [ class "restart", onClick PressedStartAgain ] [ text "Shuffle and start again" ]
+                        [ button
+                            [ class "restart"
+                            , onClick PressedStartAgain
+                            ]
+                            [ text "Shuffle and start again" ]
                         , button [ class "choose-again", onClick PressedChooseAnother ] [ text "Choose new cards" ]
                         , renderScore model
                         ]
@@ -253,13 +321,43 @@ view model =
         ]
 
 
-renderCardSetList : String -> List (Html Msg)
-renderCardSetList selectedCardSet =
+getSelectedIconSrc : String -> String
+getSelectedIconSrc title =
+    let
+        match =
+            List.filter (\item -> item.title == title) availableCardSets
+    in
+    case List.head match of
+        Nothing ->
+            "point-card-back.png"
+
+        Just cardMeta ->
+            cardMeta.iconSrc
+
+
+renderLevelList : List Card -> List (Html Msg)
+renderLevelList cards =
+    [ li [] [ button [ onClick (SelectedLevel Easy) ] [ text "Easy" ] ]
+    , if List.length cards > maxEasyCount then
+        li [] [ button [ onClick (SelectedLevel Medium) ] [ text "Medium" ] ]
+
+      else
+        text ""
+    , if List.length cards > maxMediumCount then
+        li [] [ button [ onClick (SelectedLevel Hard) ] [ text "Hard" ] ]
+
+      else
+        text ""
+    ]
+
+
+renderCardSetList : { title : String, level : Maybe Level } -> List (Html Msg)
+renderCardSetList selectedCardSetOptions =
     List.map
         (\{ title, iconSrc, file } ->
             li []
                 [ button
-                    [ classList [ ( "is-selected", file == selectedCardSet ) ]
+                    [ classList [ ( "is-selected", file == selectedCardSetOptions.title ) ]
                     , onClick (SelectedCardSet file)
                     ]
                     [ img [ src iconSrc, alt "" ] [], div [] [ text title ] ]
@@ -339,11 +437,11 @@ successToString turnsTaken pairs =
 
 renderGameArea : Model -> Html Msg
 renderGameArea model =
-    if not model.isPlaying then
-        button [ onClick PressedPlay, class "play" ] [ text "Shuffle & Play!" ]
+    if model.isPlaying then
+        renderCardList model.cards
 
     else
-        renderCardList model.cards
+        text ""
 
 
 renderHelp : Model -> Html Msg
