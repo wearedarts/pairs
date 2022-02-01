@@ -2,7 +2,7 @@ module Card.View exposing (renderCardList)
 
 import Card.Data exposing (Card)
 import Html exposing (Html, button, div, img, li, span, text, ul)
-import Html.Attributes exposing (alt, class, classList, disabled, src, style)
+import Html.Attributes exposing (alt, class, classList, disabled, src)
 import Html.Events exposing (onClick)
 import List
 import Message exposing (Msg(..))

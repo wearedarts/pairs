@@ -4,19 +4,23 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, h3, header, img, input, label, legend, li, main_, p, span, text, ul)
-import Html.Attributes exposing (alt, checked, class, classList, for, href, id, src, style, type_)
-import Html.Attributes.Aria exposing (..)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, text, ul)
+import Html.Attributes exposing (alt, class, classList, href, src, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
+import Toasty
 
 
 type alias Flags =
-    { cardJson : { pairsList : Decode.Value, title : String, help : String }
+    { cardJson :
+        { pairsList : Decode.Value
+        , title : String
+        , help : String
+        }
     , filename : String
     }
 
@@ -39,11 +43,14 @@ main =
 
 type alias Model =
     { isPlaying : Bool
-    , helpClosed : Bool
     , cards : List Card
-    , cardSetMeta : { title : String, help : String }
+    , cardSetMeta :
+        { title : String
+        , help : String
+        }
     , selectedCardSet : { title : String, level : Maybe Level }
     , cardsTried : Int
+    , toasties : Toasty.Stack String
     , playedSoundEffects : List SoundEffect
     }
 
@@ -55,22 +62,25 @@ init flags =
             initCardSet (decodeCardSet flags.cardJson.pairsList)
     in
     ( { isPlaying = False
-      , helpClosed = False
       , cards = decodedCards
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
+      , toasties = Toasty.initialState
       , playedSoundEffects = []
       }
     , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
     )
+        |> Toasty.addPersistentToast toastyConfig ShowSpeech flags.cardJson.help
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SelectedCardSet setName ->
-            ( model, Browser.Navigation.load ("?set=" ++ setName) )
+            ( model
+            , Browser.Navigation.load ("?set=" ++ setName)
+            )
 
         SelectedLevel level ->
             update PressedPlay
@@ -80,15 +90,12 @@ update msg model =
                 }
 
         PressedPlay ->
-            ( { model | isPlaying = True, helpClosed = True }
+            ( { model | isPlaying = True }
             , Random.generate ShuffledCards (Random.List.shuffle model.cards)
             )
 
         PressedStartAgain ->
-            ( { model
-                | isPlaying = True
-                , helpClosed = True
-              }
+            ( { model | isPlaying = True }
             , Random.generate ShuffledCards
                 (Random.List.shuffle
                     (List.map
@@ -104,9 +111,6 @@ update msg model =
         ShuffledCards shuffledCards ->
             ( { model | cards = shuffledCards }, Cmd.none )
 
-        PressedHelp ->
-            ( { model | helpClosed = not model.helpClosed }, Cmd.none )
-
         SelectedCard selectedCard ->
             ( { model
                 | cards = updateCardState selectedCard model.cards
@@ -115,6 +119,28 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ShowSpeech subMsg ->
+            Toasty.update toastyConfig ShowSpeech subMsg model
+
+
+toastyConfig : Toasty.Config Msg
+toastyConfig =
+    Toasty.config
+        |> Toasty.transitionOutDuration 100
+        |> Toasty.delay 8000
+        |> Toasty.containerAttrs speechContainerStyles
+        |> Toasty.itemAttrs speechBubbleStyles
+
+
+speechContainerStyles : List (Html.Attribute Msg)
+speechContainerStyles =
+    [ class "toast container" ]
+
+
+speechBubbleStyles : List (Html.Attribute Msg)
+speechBubbleStyles =
+    []
 
 
 updateLevel :
@@ -272,6 +298,7 @@ view model =
                     if model.selectedCardSet.title == "empty" then
                         div []
                             [ h2 [] [ text "Choose a set" ]
+                            , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
                             , ul [ class "card-set-choices" ]
                                 (renderCardSetList model.selectedCardSet)
                             ]
@@ -286,6 +313,7 @@ view model =
                                     ]
                                     [ text "Choose another set" ]
                                 ]
+                            , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
                             , img
                                 [ class "chosen-set"
                                 , src (getSelectedIconSrc model.cardSetMeta.title)
@@ -312,7 +340,6 @@ view model =
                   else
                     text ""
                 , renderGameArea model
-                , renderHelp model
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
             ]
@@ -444,23 +471,12 @@ renderGameArea model =
         text ""
 
 
-renderHelp : Model -> Html Msg
-renderHelp model =
-    if model.helpClosed then
-        button [ class "help", onClick PressedHelp, ariaExpanded "false" ] [ h2 [] [ text "How to play +" ] ]
-
-    else
-        div []
-            [ button [ class "help", onClick PressedHelp, ariaExpanded "true" ] [ h2 [] [ text "How to play -" ] ]
-            , if model.helpClosed then
-                text ""
-
-              else
-                div [ class "help-text" ]
-                    [ p [] [ text model.cardSetMeta.help ]
-                    , p [] [ text "Why not challenge yourself to guess it right first time?" ]
-                    ]
-            ]
+renderArtistSpeech : String -> Html Msg
+renderArtistSpeech speech =
+    div [ class "artist-speech container" ]
+        [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
+        , div [ class "speech right" ] [ text speech ]
+        ]
 
 
 renderAudio : SoundEffect -> Html Msg

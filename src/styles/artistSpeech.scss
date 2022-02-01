@@ -1,0 +1,45 @@
+.toast.container {
+  .artist-speech.container {
+    display: flex;
+  }
+
+  .artist {
+    width: 150px;
+  }
+
+  .speech {
+    background: $cream;
+    border-radius: 30px;
+    color: $teal_dark;
+    font-size: 1rem;
+    max-height: 100px;
+    padding: 12px;
+    position: relative;
+    text-align: center;
+    width: 320px;
+  }
+
+  .speech:before {
+    content: "";
+    position: absolute;
+  }
+
+ .right.speech:before {
+    border-bottom: 20px solid $cream;
+    border-left: 20px solid transparent;
+    border-right: 20px solid $cream;
+    border-top: 20px solid transparent;
+    left: -25px;
+    top: 32px;
+  }
+
+  .left.speech:before {
+    border-bottom: 20px solid $cream;
+    border-left: 20px solid $cream;
+    border-right: 20px solid transparent;
+    border-top: 20px solid transparent;
+    right: -25px;
+    top: 32px;
+  }
+
+}
