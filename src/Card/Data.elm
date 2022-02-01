@@ -1,4 +1,4 @@
-module Card.Data exposing (Card, availableCardSets, decodeCardSet, initCardSet)
+module Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 
 import Json.Decode as Decode
 
@@ -17,9 +17,15 @@ type alias SetFileMeta =
     }
 
 
+type Level
+    = Easy
+    | Medium
+    | Hard
+
+
 availableCardSets : List SetFileMeta
 availableCardSets =
-    -- WARNING title & file need to be in sync with the files in `src/json`
+    -- WARNING title & file need to be in sync with the files in `src/cardData`
     [ { title = "Colours", iconSrc = "colours-set.png", file = "colour-shade" }
     , { title = "Artists", iconSrc = "artists-set.png", file = "name-artist" }
     , { title = "Artist tools", iconSrc = "tools-set.png", file = "tools" }
