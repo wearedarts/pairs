@@ -375,7 +375,7 @@ renderGameArea model =
 renderArtistSpeech : String -> Html Msg
 renderArtistSpeech speech =
     div [ class "artist-speech container" ]
-        [ img [ class "artist", src "card-images/barbara.svg" ] []
+        [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
         , div [ class "speech right" ] [ text speech ]
         ]
 
