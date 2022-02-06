@@ -188,20 +188,24 @@ addCardToSet stopAtTotal gameSet allCards =
                 []
 
             card :: cards ->
-                getPair card allCards
-                    ++ addCardToSet (stopAtTotal - 1) cards allCards
+                let
+                    values =
+                        List.map (\acard -> acard.value) cards
+                            ++ List.map (\acard -> acard.match) cards
+                in
+                if List.member card.value values then
+                    -- We've got that one already - pass through
+                    addCardToSet stopAtTotal cards allCards
+
+                else
+                    -- Add new pair
+                    getPair card allCards
+                        ++ addCardToSet (stopAtTotal - 1) cards allCards
 
 
 getPair : Card -> List Card -> List Card
 getPair orphan allCards =
-    let
-        pair =
-            orphan :: List.filter (\card -> card.match == orphan.value) allCards
-
-        d =
-            Debug.log "pair" pair
-    in
-    pair
+    orphan :: List.filter (\card -> card.match == orphan.value) allCards
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
