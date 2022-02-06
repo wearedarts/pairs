@@ -168,13 +168,40 @@ getCardsByLevel : Level -> List Card -> List Card
 getCardsByLevel level allCards =
     case level of
         Easy ->
-            List.take maxEasyCount allCards
+            addCardToSet (maxEasyCount // 2) allCards allCards
 
         Medium ->
-            List.take maxMediumCount allCards
+            addCardToSet (maxMediumCount // 2) allCards allCards
 
         Hard ->
             allCards
+
+
+addCardToSet : Int -> List Card -> List Card -> List Card
+addCardToSet stopAtTotal gameSet allCards =
+    if stopAtTotal <= 0 then
+        []
+
+    else
+        case gameSet of
+            [] ->
+                []
+
+            card :: cards ->
+                getPair card allCards
+                    ++ addCardToSet (stopAtTotal - 1) cards allCards
+
+
+getPair : Card -> List Card -> List Card
+getPair orphan allCards =
+    let
+        pair =
+            orphan :: List.filter (\card -> card.match == orphan.value) allCards
+
+        d =
+            Debug.log "pair" pair
+    in
+    pair
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
