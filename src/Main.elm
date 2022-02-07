@@ -48,7 +48,10 @@ type alias Model =
         { title : String
         , help : String
         }
-    , selectedCardSet : { title : String, level : Maybe Level }
+    , selectedCardSet :
+        { title : String
+        , level : Maybe Level
+        }
     , cardsTried : Int
     , toasties : Toasty.Stack String
     , playedSoundEffects : List SoundEffect
@@ -165,13 +168,44 @@ getCardsByLevel : Level -> List Card -> List Card
 getCardsByLevel level allCards =
     case level of
         Easy ->
-            List.take maxEasyCount allCards
+            addCardToSet (maxEasyCount // 2) allCards allCards
 
         Medium ->
-            List.take maxMediumCount allCards
+            addCardToSet (maxMediumCount // 2) allCards allCards
 
         Hard ->
             allCards
+
+
+addCardToSet : Int -> List Card -> List Card -> List Card
+addCardToSet stopAtTotal gameSet allCards =
+    if stopAtTotal <= 0 then
+        []
+
+    else
+        case gameSet of
+            [] ->
+                []
+
+            card :: cards ->
+                let
+                    values =
+                        List.map (\acard -> acard.value) cards
+                            ++ List.map (\acard -> acard.match) cards
+                in
+                if List.member card.value values then
+                    -- We've got that one already - pass through
+                    addCardToSet stopAtTotal cards allCards
+
+                else
+                    -- Add new pair
+                    getPair card allCards
+                        ++ addCardToSet (stopAtTotal - 1) cards allCards
+
+
+getPair : Card -> List Card -> List Card
+getPair orphan allCards =
+    orphan :: List.filter (\card -> card.match == orphan.value) allCards
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -295,34 +329,27 @@ view model =
             [ div [ class "container fill-height" ]
                 [ h1 [] [ text "Find the pairs" ]
                 , if not model.isPlaying then
-                    if model.selectedCardSet.title == "empty" then
-                        div []
-                            [ h2 [] [ text "Choose a set" ]
-                            , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
-                            , ul [ class "card-set-choices" ]
-                                (renderCardSetList model.selectedCardSet)
-                            ]
+                    div []
+                        ([ h2 [ style "margin-top" "-25px" ]
+                            [ if model.selectedCardSet.title == "empty" then
+                                text "Choose a set"
 
-                    else
-                        div [ class "text-center" ]
-                            [ h2 [ style "margin-top" "-25px" ] [ text ("of " ++ model.cardSetMeta.title) ]
-                            , div []
-                                [ button
-                                    [ class "choose-again"
-                                    , onClick PressedChooseAnother
-                                    ]
-                                    [ text "Choose another set" ]
-                                ]
-                            , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
-                            , img
-                                [ class "chosen-set"
-                                , src (getSelectedIconSrc model.cardSetMeta.title)
-                                , alt ""
-                                ]
-                                []
-                            , h2 [] [ text "Choose a level to play" ]
-                            , ul [ class "level-choices" ] (renderLevelList model.cards)
+                              else
+                                text ("of " ++ model.cardSetMeta.title)
                             ]
+                         , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
+                         , ul [ class "card-set-choices" ]
+                            (renderCardSetList model.selectedCardSet)
+                         ]
+                            ++ (if model.selectedCardSet.title == "empty" then
+                                    []
+
+                                else
+                                    [ h2 [] [ text "Choose a level to play" ]
+                                    , ul [ class "level-choices" ] (renderLevelList model.cards)
+                                    ]
+                               )
+                        )
 
                   else
                     text ""
@@ -346,20 +373,6 @@ view model =
         , footer [ class "page-section" ]
             [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
         ]
-
-
-getSelectedIconSrc : String -> String
-getSelectedIconSrc title =
-    let
-        match =
-            List.filter (\item -> item.title == title) availableCardSets
-    in
-    case List.head match of
-        Nothing ->
-            "point-card-back.png"
-
-        Just cardMeta ->
-            cardMeta.iconSrc
 
 
 renderLevelList : List Card -> List (Html Msg)
