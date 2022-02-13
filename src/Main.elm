@@ -371,7 +371,7 @@ view model =
                 ]
             ]
         , footer [ class "page-section" ]
-            [ a [ href "https://wearedarts.org.uk" ] [ text "wearedarts.org.uk" ] ]
+            [ a [ href "https://thepoint.org.uk" ] [ text "thepoint.org.uk" ] ]
         ]
 
 
