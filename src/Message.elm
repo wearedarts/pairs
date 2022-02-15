@@ -1,7 +1,6 @@
 module Message exposing (Msg(..))
 
 import Card.Data exposing (Card, Level)
-import Toasty
 
 
 type Msg
@@ -12,4 +11,3 @@ type Msg
     | PressedChooseAnother
     | ShuffledCards (List Card)
     | SelectedCard Card
-    | ShowSpeech (Toasty.Msg String)

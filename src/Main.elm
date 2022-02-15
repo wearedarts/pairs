@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, text, ul)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, p, text, ul)
 import Html.Attributes exposing (alt, class, classList, href, src, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
@@ -12,7 +12,7 @@ import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
-import Toasty
+import Set exposing (Set)
 
 
 type alias Flags =
@@ -53,7 +53,7 @@ type alias Model =
         , level : Maybe Level
         }
     , cardsTried : Int
-    , toasties : Toasty.Stack String
+    , speech : Set String
     , playedSoundEffects : List SoundEffect
     }
 
@@ -69,12 +69,11 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
-      , toasties = Toasty.initialState
+      , speech = Set.fromList [ flags.cardJson.help ]
       , playedSoundEffects = []
       }
     , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
     )
-        |> Toasty.addPersistentToast toastyConfig ShowSpeech flags.cardJson.help
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -122,28 +121,6 @@ update msg model =
               }
             , Cmd.none
             )
-
-        ShowSpeech subMsg ->
-            Toasty.update toastyConfig ShowSpeech subMsg model
-
-
-toastyConfig : Toasty.Config Msg
-toastyConfig =
-    Toasty.config
-        |> Toasty.transitionOutDuration 100
-        |> Toasty.delay 8000
-        |> Toasty.containerAttrs speechContainerStyles
-        |> Toasty.itemAttrs speechBubbleStyles
-
-
-speechContainerStyles : List (Html.Attribute Msg)
-speechContainerStyles =
-    [ class "toast container" ]
-
-
-speechBubbleStyles : List (Html.Attribute Msg)
-speechBubbleStyles =
-    []
 
 
 updateLevel :
@@ -337,7 +314,7 @@ view model =
                               else
                                 text ("of " ++ model.cardSetMeta.title)
                             ]
-                         , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
+                         , renderArtistSpeech model.speech
                          , ul [ class "card-set-choices" ]
                             (renderCardSetList model.selectedCardSet)
                          ]
@@ -484,11 +461,14 @@ renderGameArea model =
         text ""
 
 
-renderArtistSpeech : String -> Html Msg
+renderArtistSpeech : Set String -> Html Msg
 renderArtistSpeech speech =
-    div [ class "artist-speech container" ]
-        [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
-        , div [ class "speech right" ] [ text speech ]
+    div [ class "toast container" ]
+        [ div [ class "artist-speech container" ]
+            [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
+            , div [ class "speech right" ]
+                (List.map (\words -> p [] [ text words ]) (Set.toList speech))
+            ]
         ]
 
 
