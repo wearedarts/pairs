@@ -55,7 +55,7 @@ type alias Model =
         , level : Maybe Level
         }
     , cardsTried : Int
-    , speech : Set String
+    , speech : String
     , playedSoundEffects : List SoundEffect
     , speechToast : Maybe ( Maybe Artist, String )
     }
@@ -72,7 +72,7 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
-      , speech = Set.fromList [ flags.cardJson.help ]
+      , speech = flags.cardJson.help
       , playedSoundEffects = []
       , speechToast = Nothing
       }
@@ -513,15 +513,19 @@ renderGameArea model =
         text ""
 
 
-renderArtistSpeech : Set String -> Html Msg
+renderArtistSpeech : String -> Html Msg
 renderArtistSpeech speech =
-    div [ class "speech container" ]
-        [ div [ class "artist-speech container" ]
-            [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
-            , div [ class "speech right" ]
-                (List.map (\words -> p [] [ text words ]) (Set.toList speech))
+    if String.length speech > 0 then
+        div [ class "speech container" ]
+            [ div [ class "artist-speech container" ]
+                [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
+                , div [ class "speech right" ]
+                    [ text speech ]
+                ]
             ]
-        ]
+
+    else
+        text ""
 
 
 renderArtistSpeechToast : ( Maybe Artist, String ) -> Html Msg
