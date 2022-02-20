@@ -135,8 +135,18 @@ update msg model =
                 | cards = updateCardState selectedCard model.cards
                 , cardsTried = model.cardsTried + 1
                 , playedSoundEffects = updateSoundEffects selectedCard model
+                , speechToast =
+                    if Tuple.first (needsProgressReport model) then
+                        Just ( Nothing, Tuple.second (needsProgressReport model) )
+
+                    else
+                        Nothing
               }
-            , Cmd.none
+            , if Tuple.first (needsProgressReport model) then
+                Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
+
+              else
+                Cmd.none
             )
 
         PressedConfirmToast ->
@@ -225,6 +235,11 @@ addCardToSet stopAtTotal gameSet allCards =
 getPair : Card -> List Card -> List Card
 getPair orphan allCards =
     orphan :: List.filter (\card -> card.match == orphan.value) allCards
+
+
+needsProgressReport : Model -> ( Bool, String )
+needsProgressReport model =
+    ( True, "hello" )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
