@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Artist exposing (Artist, allArtists)
 import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
@@ -56,7 +57,7 @@ type alias Model =
     , cardsTried : Int
     , speech : Set String
     , playedSoundEffects : List SoundEffect
-    , speechToast : Set String
+    , speechToast : Maybe ( Maybe Artist, String )
     }
 
 
@@ -73,7 +74,7 @@ init flags =
       , cardsTried = 0
       , speech = Set.fromList [ flags.cardJson.help ]
       , playedSoundEffects = []
-      , speechToast = Set.empty
+      , speechToast = Nothing
       }
     , Cmd.batch
         [ Random.generate ShuffledCards (Random.List.shuffle decodedCards)
@@ -96,7 +97,9 @@ update msg model =
             )
 
         CardSetLoaded ->
-            ( { model | speechToast = Set.insert (getLevelHelp (List.length model.cards)) model.speechToast }, Cmd.none )
+            ( { model | speechToast = Just ( Nothing, getLevelHelp (List.length model.cards) ) }
+            , Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
+            )
 
         SelectedLevel level ->
             update PressedPlay
@@ -137,7 +140,17 @@ update msg model =
             )
 
         PressedConfirmToast ->
-            ( { model | speechToast = Set.empty }, Cmd.none )
+            ( { model | speechToast = Nothing }, Cmd.none )
+
+        ArtistSpeaks shuffledArtists ->
+            let
+                randomArtist =
+                    List.head shuffledArtists
+
+                currentSpeechToast =
+                    Maybe.withDefault ( Nothing, "" ) model.speechToast
+            in
+            ( { model | speechToast = Just ( randomArtist, Tuple.second currentSpeechToast ) }, Cmd.none )
 
 
 updateLevel :
@@ -375,8 +388,13 @@ view model =
                 , renderGameArea model
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
-            , if Set.size model.speechToast > 0 && model.selectedCardSet.title /= "empty" then
-                renderArtistSpeechToast model.speechToast
+            , if model.selectedCardSet.title /= "empty" then
+                case model.speechToast of
+                    Just ( artist, speech ) ->
+                        renderArtistSpeechToast ( artist, speech )
+
+                    Nothing ->
+                        text ""
 
               else
                 text ""
@@ -506,19 +524,29 @@ renderArtistSpeech speech =
         ]
 
 
-renderArtistSpeechToast : Set String -> Html Msg
-renderArtistSpeechToast speech =
-    div [ class "speech dismissable-toast overlay" ]
-        [ div [ class "content" ]
-            [ div [ class "artist-speech" ]
-                [ div [ class "speech left" ]
-                    (List.map (\words -> p [] [ text words ]) (Set.toList speech)
-                        ++ [ button [ onClick PressedConfirmToast ] [ text "Ok!" ] ]
-                    )
-                , img [ class "artist", alt "Avatar of Andy Warhol", src "card-images/andy.svg" ] []
+renderArtistSpeechToast : ( Maybe Artist, String ) -> Html Msg
+renderArtistSpeechToast ( maybeArtist, speech ) =
+    case maybeArtist of
+        Just artist ->
+            div [ class "speech dismissable-toast overlay" ]
+                [ div [ class "content" ]
+                    [ div [ class "artist-speech" ]
+                        [ div [ class "speech left" ]
+                            [ p [] [ text speech ]
+                            , button [ onClick PressedConfirmToast ] [ text "Ok!" ]
+                            ]
+                        , img
+                            [ class "artist"
+                            , alt (Artist.artistToAlt artist)
+                            , src (Artist.artistToSvgSrc artist)
+                            ]
+                            []
+                        ]
+                    ]
                 ]
-            ]
-        ]
+
+        Nothing ->
+            text ""
 
 
 renderAudio : SoundEffect -> Html Msg
