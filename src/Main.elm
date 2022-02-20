@@ -13,6 +13,7 @@ import Message exposing (Msg(..))
 import Random
 import Random.List
 import Set exposing (Set)
+import Task
 
 
 type alias Flags =
@@ -55,6 +56,7 @@ type alias Model =
     , cardsTried : Int
     , speech : Set String
     , playedSoundEffects : List SoundEffect
+    , speechToast : Set String
     }
 
 
@@ -71,9 +73,18 @@ init flags =
       , cardsTried = 0
       , speech = Set.fromList [ flags.cardJson.help ]
       , playedSoundEffects = []
+      , speechToast = Set.empty
       }
-    , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
+    , Cmd.batch
+        [ Random.generate ShuffledCards (Random.List.shuffle decodedCards)
+        , msgToCmdMsg CardSetLoaded
+        ]
     )
+
+
+msgToCmdMsg : Msg -> Cmd Msg
+msgToCmdMsg msg =
+    Task.succeed msg |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -83,6 +94,9 @@ update msg model =
             ( model
             , Browser.Navigation.load ("?set=" ++ setName)
             )
+
+        CardSetLoaded ->
+            ( { model | speechToast = Set.insert (getLevelHelp (List.length model.cards)) model.speechToast }, Cmd.none )
 
         SelectedLevel level ->
             update PressedPlay
@@ -122,6 +136,9 @@ update msg model =
             , Cmd.none
             )
 
+        PressedConfirmToast ->
+            ( { model | speechToast = Set.empty }, Cmd.none )
+
 
 updateLevel :
     Level
@@ -129,6 +146,18 @@ updateLevel :
     -> { title : String, level : Maybe Level }
 updateLevel newLevel cardSet =
     { cardSet | level = Just newLevel }
+
+
+getLevelHelp : Int -> String
+getLevelHelp cardCount =
+    if cardCount <= maxEasyCount then
+        "Press Easy to play!"
+
+    else if cardCount <= maxMediumCount then
+        "Choose a level - Easy or Medium"
+
+    else
+        "Choose a level - Easy, Medium or Hard"
 
 
 maxEasyCount : Int
@@ -346,6 +375,11 @@ view model =
                 , renderGameArea model
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
+            , if Set.size model.speechToast > 0 && model.selectedCardSet.title /= "empty" then
+                renderArtistSpeechToast model.speechToast
+
+              else
+                text ""
             ]
         , footer [ class "page-section" ]
             [ a [ href "https://thepoint.org.uk" ] [ text "thepoint.org.uk" ] ]
@@ -463,11 +497,26 @@ renderGameArea model =
 
 renderArtistSpeech : Set String -> Html Msg
 renderArtistSpeech speech =
-    div [ class "toast container" ]
+    div [ class "speech container" ]
         [ div [ class "artist-speech container" ]
             [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
             , div [ class "speech right" ]
                 (List.map (\words -> p [] [ text words ]) (Set.toList speech))
+            ]
+        ]
+
+
+renderArtistSpeechToast : Set String -> Html Msg
+renderArtistSpeechToast speech =
+    div [ class "speech dismissable-toast overlay" ]
+        [ div [ class "content" ]
+            [ div [ class "artist-speech" ]
+                [ div [ class "speech left" ]
+                    (List.map (\words -> p [] [ text words ]) (Set.toList speech)
+                        ++ [ button [ onClick PressedConfirmToast ] [ text "Ok!" ] ]
+                    )
+                , img [ class "artist", alt "Avatar of Andy Warhol", src "card-images/andy.svg" ] []
+                ]
             ]
         ]
 

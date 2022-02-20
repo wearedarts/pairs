@@ -1,5 +1,5 @@
-.toast.container {
-  .artist-speech.container {
+.speech {
+  .artist-speech {
     display: flex;
   }
 
@@ -32,14 +32,38 @@
     left: -25px;
     top: 32px;
   }
-
   .left.speech:before {
     border-bottom: 20px solid $cream;
     border-left: 20px solid $cream;
     border-right: 20px solid transparent;
     border-top: 20px solid transparent;
     right: -25px;
-    top: 32px;
+    top: 40px;
   }
 
+  &.dismissable-toast.overlay {
+    background-color: rgba(256, 256, 256, 0.65);
+    inset: 0px;
+    margin-top: 10rem;
+    position: fixed;
+    width: 100%;
+    .content {
+      align-items: flex-end;
+      display: flex;
+      height: 100%;
+      justify-content: center;
+    }
+    .speech p {
+      font-size: 1.4rem;
+    }
+    .artist {
+      width: 50%;
+    }
+    button {
+      background-color: $plum;
+      color: $cream;
+      font-weight: 800;
+      padding: 0.3rem 0.8rem;
+    }
+  }
 }
