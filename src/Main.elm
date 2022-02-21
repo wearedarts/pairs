@@ -245,8 +245,28 @@ needsProgressReport selectedCard model =
             (pairsFound (revealedCards model.cards) == 2)
                 -- selected card triggers 3rd
                 && matched model.cards selectedCard
+
+        hasSixCorrect =
+            (pairsFound (revealedCards model.cards) == 4)
+                -- selected card triggers 6th
+                && matched model.cards selectedCard
+
+        showMessage =
+            hasThreeCorrect || hasSixCorrect
     in
-    ( hasThreeCorrect, "Three in a row! Keep going." )
+    -- Todo return Key instead for what random message pool to select from
+    -- ThreeCorrect, FiveCorrect, ThreeWrong
+    if showMessage then
+        ( True
+        , if hasSixCorrect then
+            "You’re really paying attention – keep going!"
+
+          else
+            "Three in a row! Keep going."
+        )
+
+    else
+        ( False, "" )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
