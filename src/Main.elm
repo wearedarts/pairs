@@ -136,13 +136,13 @@ update msg model =
                 , cardsTried = model.cardsTried + 1
                 , playedSoundEffects = updateSoundEffects selectedCard model
                 , speechToast =
-                    if Tuple.first (needsProgressReport model) then
-                        Just ( Nothing, Tuple.second (needsProgressReport model) )
+                    if Tuple.first (needsProgressReport selectedCard model) then
+                        Just ( Nothing, Tuple.second (needsProgressReport selectedCard model) )
 
                     else
                         Nothing
               }
-            , if Tuple.first (needsProgressReport model) then
+            , if Tuple.first (needsProgressReport selectedCard model) then
                 Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
 
               else
@@ -237,9 +237,16 @@ getPair orphan allCards =
     orphan :: List.filter (\card -> card.match == orphan.value) allCards
 
 
-needsProgressReport : Model -> ( Bool, String )
-needsProgressReport model =
-    ( True, "hello" )
+needsProgressReport : Card -> Model -> ( Bool, String )
+needsProgressReport selectedCard model =
+    let
+        hasThreeCorrect =
+            -- Previously 2 matches
+            (pairsFound (revealedCards model.cards) == 2)
+                -- selected card triggers 3rd
+                && matched model.cards selectedCard
+    in
+    ( hasThreeCorrect, "Three in a row! Keep going." )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
