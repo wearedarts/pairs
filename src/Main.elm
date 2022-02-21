@@ -1,10 +1,11 @@
 module Main exposing (main)
 
+import Artist exposing (Artist, allArtists)
 import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
 import Card.View exposing (renderCardList)
-import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, text, ul)
+import Html exposing (Html, a, button, div, footer, h1, h2, header, img, li, main_, p, text, ul)
 import Html.Attributes exposing (alt, class, classList, href, src, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
@@ -12,7 +13,8 @@ import Json.Encode as Encode
 import Message exposing (Msg(..))
 import Random
 import Random.List
-import Toasty
+import Set exposing (Set)
+import Task
 
 
 type alias Flags =
@@ -53,8 +55,9 @@ type alias Model =
         , level : Maybe Level
         }
     , cardsTried : Int
-    , toasties : Toasty.Stack String
+    , speech : String
     , playedSoundEffects : List SoundEffect
+    , speechToast : Maybe ( Maybe Artist, String )
     }
 
 
@@ -69,12 +72,20 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
-      , toasties = Toasty.initialState
+      , speech = flags.cardJson.help
       , playedSoundEffects = []
+      , speechToast = Nothing
       }
-    , Random.generate ShuffledCards (Random.List.shuffle decodedCards)
+    , Cmd.batch
+        [ Random.generate ShuffledCards (Random.List.shuffle decodedCards)
+        , msgToCmdMsg CardSetLoaded
+        ]
     )
-        |> Toasty.addPersistentToast toastyConfig ShowSpeech flags.cardJson.help
+
+
+msgToCmdMsg : Msg -> Cmd Msg
+msgToCmdMsg msg =
+    Task.succeed msg |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -83,6 +94,11 @@ update msg model =
         SelectedCardSet setName ->
             ( model
             , Browser.Navigation.load ("?set=" ++ setName)
+            )
+
+        CardSetLoaded ->
+            ( { model | speechToast = Just ( Nothing, getLevelHelp (List.length model.cards) ) }
+            , Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
             )
 
         SelectedLevel level ->
@@ -123,27 +139,18 @@ update msg model =
             , Cmd.none
             )
 
-        ShowSpeech subMsg ->
-            Toasty.update toastyConfig ShowSpeech subMsg model
+        PressedConfirmToast ->
+            ( { model | speechToast = Nothing }, Cmd.none )
 
+        ArtistSpeaks shuffledArtists ->
+            let
+                randomArtist =
+                    List.head shuffledArtists
 
-toastyConfig : Toasty.Config Msg
-toastyConfig =
-    Toasty.config
-        |> Toasty.transitionOutDuration 100
-        |> Toasty.delay 8000
-        |> Toasty.containerAttrs speechContainerStyles
-        |> Toasty.itemAttrs speechBubbleStyles
-
-
-speechContainerStyles : List (Html.Attribute Msg)
-speechContainerStyles =
-    [ class "toast container" ]
-
-
-speechBubbleStyles : List (Html.Attribute Msg)
-speechBubbleStyles =
-    []
+                currentSpeechToast =
+                    Maybe.withDefault ( Nothing, "" ) model.speechToast
+            in
+            ( { model | speechToast = Just ( randomArtist, Tuple.second currentSpeechToast ) }, Cmd.none )
 
 
 updateLevel :
@@ -152,6 +159,18 @@ updateLevel :
     -> { title : String, level : Maybe Level }
 updateLevel newLevel cardSet =
     { cardSet | level = Just newLevel }
+
+
+getLevelHelp : Int -> String
+getLevelHelp cardCount =
+    if cardCount <= maxEasyCount then
+        "Press Easy to play!"
+
+    else if cardCount <= maxMediumCount then
+        "Choose a level - Easy or Medium"
+
+    else
+        "Choose a level - Easy, Medium or Hard"
 
 
 maxEasyCount : Int
@@ -337,7 +356,7 @@ view model =
                               else
                                 text ("of " ++ model.cardSetMeta.title)
                             ]
-                         , Toasty.view toastyConfig renderArtistSpeech ShowSpeech model.toasties
+                         , renderArtistSpeech model.speech
                          , ul [ class "card-set-choices" ]
                             (renderCardSetList model.selectedCardSet)
                          ]
@@ -369,6 +388,16 @@ view model =
                 , renderGameArea model
                 , div [] (List.map renderAudio model.playedSoundEffects)
                 ]
+            , if model.selectedCardSet.title /= "empty" then
+                case model.speechToast of
+                    Just ( artist, speech ) ->
+                        renderArtistSpeechToast ( artist, speech )
+
+                    Nothing ->
+                        text ""
+
+              else
+                text ""
             ]
         , footer [ class "page-section" ]
             [ a [ href "https://thepoint.org.uk" ] [ text "thepoint.org.uk" ] ]
@@ -486,10 +515,42 @@ renderGameArea model =
 
 renderArtistSpeech : String -> Html Msg
 renderArtistSpeech speech =
-    div [ class "artist-speech container" ]
-        [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
-        , div [ class "speech right" ] [ text speech ]
-        ]
+    if String.length speech > 0 then
+        div [ class "speech container" ]
+            [ div [ class "artist-speech container" ]
+                [ img [ class "artist", alt "Avatar of Barbara Hepworth", src "card-images/barbara.svg" ] []
+                , div [ class "speech right" ]
+                    [ text speech ]
+                ]
+            ]
+
+    else
+        text ""
+
+
+renderArtistSpeechToast : ( Maybe Artist, String ) -> Html Msg
+renderArtistSpeechToast ( maybeArtist, speech ) =
+    case maybeArtist of
+        Just artist ->
+            div [ class "speech dismissable-toast overlay" ]
+                [ div [ class "content" ]
+                    [ div [ class "artist-speech" ]
+                        [ div [ class "speech left" ]
+                            [ p [] [ text speech ]
+                            , button [ onClick PressedConfirmToast ] [ text "Ok!" ]
+                            ]
+                        , img
+                            [ class "artist"
+                            , alt (Artist.artistToAlt artist)
+                            , src (Artist.artistToSvgSrc artist)
+                            ]
+                            []
+                        ]
+                    ]
+                ]
+
+        Nothing ->
+            text ""
 
 
 renderAudio : SoundEffect -> Html Msg
