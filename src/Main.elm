@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Artist exposing (Artist, allArtists)
+import ArtistSpeech exposing (ProgressTrigger(..), getLevelHelp, getProgressSpeech, maxEasyCount, maxMediumCount)
 import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
@@ -55,6 +56,7 @@ type alias Model =
         , level : Maybe Level
         }
     , cardsTried : Int
+    , streak : Streak
     , speech : String
     , playedSoundEffects : List SoundEffect
     , speechToast : Maybe ( Maybe Artist, String )
@@ -72,6 +74,7 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
+      , streak = Correct 0
       , speech = flags.cardJson.help
       , playedSoundEffects = []
       , speechToast = Nothing
@@ -114,7 +117,7 @@ update msg model =
             )
 
         PressedStartAgain ->
-            ( { model | isPlaying = True }
+            ( { model | isPlaying = True, streak = Correct 0 }
             , Random.generate ShuffledCards
                 (Random.List.shuffle
                     (List.map
@@ -135,8 +138,25 @@ update msg model =
                 | cards = updateCardState selectedCard model.cards
                 , cardsTried = model.cardsTried + 1
                 , playedSoundEffects = updateSoundEffects selectedCard model
+                , streak =
+                    if model.cardsTried == 0 || cardsIsEven (revealedCards model.cards) then
+                        -- No change if first card of 2
+                        model.streak
+
+                    else
+                        updateStreak selectedCard model
+                , speechToast =
+                    if Tuple.first (needsProgressReport selectedCard model) then
+                        Just ( Nothing, Tuple.second (needsProgressReport selectedCard model) )
+
+                    else
+                        Nothing
               }
-            , Cmd.none
+            , if Tuple.first (needsProgressReport selectedCard model) then
+                Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
+
+              else
+                Cmd.none
             )
 
         PressedConfirmToast ->
@@ -159,28 +179,6 @@ updateLevel :
     -> { title : String, level : Maybe Level }
 updateLevel newLevel cardSet =
     { cardSet | level = Just newLevel }
-
-
-getLevelHelp : Int -> String
-getLevelHelp cardCount =
-    if cardCount <= maxEasyCount then
-        "Press Easy to play!"
-
-    else if cardCount <= maxMediumCount then
-        "Choose a level - Easy or Medium"
-
-    else
-        "Choose a level - Easy, Medium or Hard"
-
-
-maxEasyCount : Int
-maxEasyCount =
-    8
-
-
-maxMediumCount : Int
-maxMediumCount =
-    12
 
 
 getCardsByLevel : Level -> List Card -> List Card
@@ -225,6 +223,78 @@ addCardToSet stopAtTotal gameSet allCards =
 getPair : Card -> List Card -> List Card
 getPair orphan allCards =
     orphan :: List.filter (\card -> card.match == orphan.value) allCards
+
+
+type Streak
+    = Correct Int
+    | Incorrect Int
+
+
+updateStreak : Card -> Model -> Streak
+updateStreak selectedCard model =
+    case model.streak of
+        Correct tries ->
+            if matched model.cards selectedCard then
+                Correct (tries + 1)
+
+            else
+                Incorrect 1
+
+        Incorrect tries ->
+            if matched model.cards selectedCard then
+                Correct 1
+
+            else
+                Incorrect (tries + 1)
+
+
+needsProgressReport : Card -> Model -> ( Bool, String )
+needsProgressReport selectedCard model =
+    let
+        progressType : ProgressTrigger
+        progressType =
+            -- Only one new card turned over
+            if cardsIsEven (revealedCards model.cards) then
+                None
+
+            else if notMatched model.cards selectedCard then
+                -- This is an incorrect try check if 3 in a row
+                case model.streak of
+                    Incorrect tries ->
+                        if modBy 3 (tries + 1) == 0 then
+                            MissedThreeInARow
+
+                        else
+                            None
+
+                    Correct _ ->
+                        None
+
+            else
+            -- This is a correct try
+            -- Check if this is the final pair
+            if
+                List.length model.cards == (List.length (revealedCards model.cards) + 1)
+            then
+                MatchedAll
+
+            else if
+                modBy 3 (List.length (revealedCards model.cards) + 1)
+                    == 0
+                -- Check if total revealed multiple of 3
+            then
+                MatchedThree
+
+            else
+                None
+    in
+    if progressType == None then
+        ( False, "" )
+
+    else
+        ( True
+        , Maybe.withDefault "" (List.head (getProgressSpeech progressType))
+        )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
