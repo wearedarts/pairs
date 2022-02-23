@@ -55,6 +55,7 @@ type alias Model =
         , level : Maybe Level
         }
     , cardsTried : Int
+    , streak : Streak
     , speech : String
     , playedSoundEffects : List SoundEffect
     , speechToast : Maybe ( Maybe Artist, String )
@@ -72,6 +73,7 @@ init flags =
       , cardSetMeta = { title = flags.cardJson.title, help = flags.cardJson.help }
       , selectedCardSet = { title = flags.filename, level = Nothing }
       , cardsTried = 0
+      , streak = Correct 0
       , speech = flags.cardJson.help
       , playedSoundEffects = []
       , speechToast = Nothing
@@ -114,7 +116,7 @@ update msg model =
             )
 
         PressedStartAgain ->
-            ( { model | isPlaying = True }
+            ( { model | isPlaying = True, streak = Correct 0 }
             , Random.generate ShuffledCards
                 (Random.List.shuffle
                     (List.map
@@ -135,6 +137,13 @@ update msg model =
                 | cards = updateCardState selectedCard model.cards
                 , cardsTried = model.cardsTried + 1
                 , playedSoundEffects = updateSoundEffects selectedCard model
+                , streak =
+                    if model.cardsTried == 0 || cardsIsEven (revealedCards model.cards) then
+                        -- No change if first card of 2
+                        model.streak
+
+                    else
+                        updateStreak selectedCard model
                 , speechToast =
                     if Tuple.first (needsProgressReport selectedCard model) then
                         Just ( Nothing, Tuple.second (needsProgressReport selectedCard model) )
@@ -237,36 +246,71 @@ getPair orphan allCards =
     orphan :: List.filter (\card -> card.match == orphan.value) allCards
 
 
+type Streak
+    = Correct Int
+    | Incorrect Int
+
+
+updateStreak : Card -> Model -> Streak
+updateStreak selectedCard model =
+    case model.streak of
+        Correct tries ->
+            if matched model.cards selectedCard then
+                Correct (tries + 1)
+
+            else
+                Incorrect 1
+
+        Incorrect tries ->
+            if matched model.cards selectedCard then
+                Correct 1
+
+            else
+                Incorrect (tries + 1)
+
+
+type ProgressTrigger
+    = MatchedThree
+    | MissedThreeInARow
+    | MatchedAll
+    | None
+
+
 needsProgressReport : Card -> Model -> ( Bool, String )
 needsProgressReport selectedCard model =
     let
-        hasThreeCorrect =
-            -- Previously 2 matches
-            (pairsFound (revealedCards model.cards) == 2)
-                -- selected card triggers 3rd
-                && matched model.cards selectedCard
+        progressType : ProgressTrigger
+        progressType =
+            if
+                not (cardsIsEven (revealedCards model.cards))
+                    && notMatched model.cards selectedCard
+            then
+                case model.streak of
+                    Incorrect tries ->
+                        if modBy 3 (tries + 1) == 0 then
+                            MissedThreeInARow
 
-        hasSixCorrect =
-            (pairsFound (revealedCards model.cards) == 4)
-                -- selected card triggers 6th
-                && matched model.cards selectedCard
+                        else
+                            None
 
-        showMessage =
-            hasThreeCorrect || hasSixCorrect
+                    Correct _ ->
+                        None
+
+            else
+                None
     in
-    -- Todo return Key instead for what random message pool to select from
-    -- ThreeCorrect, FiveCorrect, ThreeWrong
-    if showMessage then
-        ( True
-        , if hasSixCorrect then
-            "You’re really paying attention – keep going!"
+    case progressType of
+        MatchedThree ->
+            ( True, "Matched 3" )
 
-          else
-            "Three in a row! Keep going."
-        )
+        MissedThreeInARow ->
+            ( True, "Missed 3" )
 
-    else
-        ( False, "" )
+        MatchedAll ->
+            ( True, "Matched all" )
+
+        None ->
+            ( False, "" )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
