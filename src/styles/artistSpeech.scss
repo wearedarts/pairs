@@ -55,17 +55,24 @@
       position: relative;
       animation: slide-in-from-bottom 0.7s;
     }
+    .speech {
+      max-height: 120px;
+    }
     .speech p {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
     }
     .artist {
       width: 50%;
     }
     button {
       background-color: $plum;
+      bottom: 0;
       color: $cream;
       font-weight: 800;
+      margin-bottom: -0.8rem;
+      margin-left: -1.3rem;
       padding: 0.3rem 0.8rem;
+      position: absolute;
     }
   }
 }
