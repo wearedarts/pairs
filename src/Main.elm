@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Artist exposing (Artist, allArtists)
+import ArtistSpeech exposing (ProgressTrigger(..), getLevelHelp, getProgressSpeech, maxEasyCount, maxMediumCount)
 import Browser
 import Browser.Navigation
 import Card.Data exposing (Card, Level(..), availableCardSets, decodeCardSet, initCardSet)
@@ -180,28 +181,6 @@ updateLevel newLevel cardSet =
     { cardSet | level = Just newLevel }
 
 
-getLevelHelp : Int -> String
-getLevelHelp cardCount =
-    if cardCount <= maxEasyCount then
-        "Press Easy to play!"
-
-    else if cardCount <= maxMediumCount then
-        "Choose a level - Easy or Medium"
-
-    else
-        "Choose a level - Easy, Medium or Hard"
-
-
-maxEasyCount : Int
-maxEasyCount =
-    8
-
-
-maxMediumCount : Int
-maxMediumCount =
-    12
-
-
 getCardsByLevel : Level -> List Card -> List Card
 getCardsByLevel level allCards =
     case level of
@@ -269,13 +248,6 @@ updateStreak selectedCard model =
                 Incorrect (tries + 1)
 
 
-type ProgressTrigger
-    = MatchedThree
-    | MissedThreeInARow
-    | MatchedAll
-    | None
-
-
 needsProgressReport : Card -> Model -> ( Bool, String )
 needsProgressReport selectedCard model =
     let
@@ -316,18 +288,13 @@ needsProgressReport selectedCard model =
             else
                 None
     in
-    case progressType of
-        MatchedThree ->
-            ( True, "Matched 3" )
+    if progressType == None then
+        ( False, "" )
 
-        MissedThreeInARow ->
-            ( True, "Missed 3" )
-
-        MatchedAll ->
-            ( True, "Matched all" )
-
-        None ->
-            ( False, "" )
+    else
+        ( True
+        , Maybe.withDefault "" (List.head (getProgressSpeech progressType))
+        )
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
