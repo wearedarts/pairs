@@ -281,10 +281,12 @@ needsProgressReport selectedCard model =
     let
         progressType : ProgressTrigger
         progressType =
-            if
-                not (cardsIsEven (revealedCards model.cards))
-                    && notMatched model.cards selectedCard
-            then
+            -- Only one new card turned over
+            if cardsIsEven (revealedCards model.cards) then
+                None
+
+            else if notMatched model.cards selectedCard then
+                -- This is an incorrect try check if 3 in a row
                 case model.streak of
                     Incorrect tries ->
                         if modBy 3 (tries + 1) == 0 then
@@ -295,6 +297,21 @@ needsProgressReport selectedCard model =
 
                     Correct _ ->
                         None
+
+            else
+            -- This is a correct try
+            -- Check if this is the final pair
+            if
+                List.length model.cards == (List.length (revealedCards model.cards) + 1)
+            then
+                MatchedAll
+
+            else if
+                modBy 3 (List.length (revealedCards model.cards) + 1)
+                    == 0
+                -- Check if total revealed multiple of 3
+            then
+                MatchedThree
 
             else
                 None
