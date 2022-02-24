@@ -14,4 +14,6 @@ type Msg
     | ShuffledCards (List Card)
     | SelectedCard Card
     | ArtistSpeaks (List Artist)
+    | ShuffleSpeech (List String)
+    | SetSpeech (List String)
     | PressedConfirmToast
