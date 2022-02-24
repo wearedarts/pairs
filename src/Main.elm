@@ -363,10 +363,10 @@ newSoundEffects oldCardState selectedCard =
             [ { source = "win.wav", volume = 0.6 } ]
 
         else
-            [ { source = "success.ogg", volume = 0.6 } ]
+            [ { source = "success.wav", volume = 0.6 } ]
 
     else
-        [ { source = "failure.ogg", volume = 0.6 } ]
+        [ { source = "failure.wav", volume = 0.6 } ]
 
 
 revealedCards : List Card -> List Card
