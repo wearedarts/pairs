@@ -35,6 +35,13 @@ header {
       outline: 3px solid $pink;
       outline-offset: 3px;
     }
+
+    +a {
+      @media (max-width: $tabletPortraitPlus) {
+        padding-left: 2rem;
+        width: 50%;
+      }
+    }
   }
 
   img {
@@ -148,7 +155,7 @@ footer {
 // Container element to constrain page max-width
 .container {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 2rem;
 }
 

@@ -1,10 +1,19 @@
 .speech {
   .artist-speech {
     display: flex;
+    margin-left: 5rem;
+    max-width: calc(100% - 7rem);
+    @media (max-width: $tabletPortraitPlus) {
+      margin: 0 1rem;
+      max-width: calc(100% - 2rem);
+    }
   }
 
   .artist {
     width: 150px;
+    @media (max-width: $tabletPortraitPlus) {
+      max-width: 30%;
+    }
   }
 
   .speech {
@@ -17,6 +26,11 @@
     position: relative;
     text-align: center;
     width: 320px;
+    @media (max-width: $tabletPortraitPlus) {
+      margin-top: -20px;
+      max-height: 110px;
+      max-width: 62%;
+    }
   }
 
   .speech:before {
@@ -52,25 +66,29 @@
       display: flex;
       height: 100%;
       justify-content: center;
+      margin: 0 1rem;
       position: relative;
       animation: slide-in-from-bottom 0.7s;
     }
     .speech {
       max-height: 120px;
-      width: 360px;
+      width: 60%
     }
     .speech p {
       font-size: 1.2rem;
+      @media (max-width: $tabletPortraitPlus) {
+        font-size: 1rem;
+      }
     }
     .artist {
-      width: 50%;
+      width: 40%;
     }
     button {
       background-color: $plum;
       bottom: 0;
       color: $cream;
       font-weight: 800;
-      margin-bottom: -0.8rem;
+      margin-bottom: -1.2rem;
       margin-left: -1.3rem;
       padding: 0.3rem 0.8rem;
       position: absolute;
