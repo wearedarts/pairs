@@ -1,10 +1,19 @@
 .speech {
   .artist-speech {
     display: flex;
+    margin-left: 5rem;
+    max-width: calc(100% - 7rem);
+    @media (max-width: $tabletPortraitPlus) {
+      margin: 0 1rem;
+      max-width: calc(100% - 2rem);
+    }
   }
 
   .artist {
     width: 150px;
+    @media (max-width: $tabletPortraitPlus) {
+      max-width: 30%;
+    }
   }
 
   .speech {
@@ -17,6 +26,11 @@
     position: relative;
     text-align: center;
     width: 320px;
+    @media (max-width: $tabletPortraitPlus) {
+      margin-top: -20px;
+      max-height: 110px;
+      max-width: 62%;
+    }
   }
 
   .speech:before {
