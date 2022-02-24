@@ -59,7 +59,7 @@ type alias Model =
     , streak : Streak
     , speech : String
     , playedSoundEffects : List SoundEffect
-    , speechToast : Maybe ( Maybe Artist, String )
+    , speechToast : Maybe { artist : Maybe Artist, speech : String }
     }
 
 
@@ -100,7 +100,13 @@ update msg model =
             )
 
         CardSetLoaded ->
-            ( { model | speechToast = Just ( Nothing, getLevelHelp (List.length model.cards) ) }
+            ( { model
+                | speechToast =
+                    Just
+                        { artist = Nothing
+                        , speech = getLevelHelp (List.length model.cards)
+                        }
+              }
             , Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
             )
 
@@ -146,17 +152,25 @@ update msg model =
                     else
                         updateStreak selectedCard model
                 , speechToast =
-                    if Tuple.first (needsProgressReport selectedCard model) then
-                        Just ( Nothing, Tuple.second (needsProgressReport selectedCard model) )
+                    case needsProgressReport selectedCard model of
+                        None ->
+                            Nothing
 
-                    else
-                        Nothing
+                        _ ->
+                            Just
+                                { artist = Nothing
+                                , speech = ""
+                                }
               }
-            , if Tuple.first (needsProgressReport selectedCard model) then
-                Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
+            , case needsProgressReport selectedCard model of
+                None ->
+                    Cmd.none
 
-              else
-                Cmd.none
+                progressType ->
+                    Cmd.batch
+                        [ Random.generate ArtistSpeaks (Random.List.shuffle allArtists)
+                        , msgToCmdMsg (ShuffleSpeech (getProgressSpeech progressType))
+                        ]
             )
 
         PressedConfirmToast ->
@@ -168,9 +182,32 @@ update msg model =
                     List.head shuffledArtists
 
                 currentSpeechToast =
-                    Maybe.withDefault ( Nothing, "" ) model.speechToast
+                    Maybe.withDefault { artist = Nothing, speech = "" } model.speechToast
             in
-            ( { model | speechToast = Just ( randomArtist, Tuple.second currentSpeechToast ) }, Cmd.none )
+            ( { model | speechToast = Just { artist = randomArtist, speech = currentSpeechToast.speech } }, Cmd.none )
+
+        ShuffleSpeech speechOptions ->
+            ( model, Random.generate SetSpeech (Random.List.shuffle speechOptions) )
+
+        SetSpeech shuffledSpeech ->
+            case model.speechToast of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just aSpeechToast ->
+                    ( { model
+                        | speechToast = Just (updateProgressSpeech shuffledSpeech aSpeechToast)
+                      }
+                    , Cmd.none
+                    )
+
+
+updateProgressSpeech :
+    List String
+    -> { artist : Maybe Artist, speech : String }
+    -> { artist : Maybe Artist, speech : String }
+updateProgressSpeech speechList speechToast =
+    { speechToast | speech = Maybe.withDefault "" (List.head speechList) }
 
 
 updateLevel :
@@ -248,53 +285,42 @@ updateStreak selectedCard model =
                 Incorrect (tries + 1)
 
 
-needsProgressReport : Card -> Model -> ( Bool, String )
+needsProgressReport : Card -> Model -> ProgressTrigger
 needsProgressReport selectedCard model =
-    let
-        progressType : ProgressTrigger
-        progressType =
-            -- Only one new card turned over
-            if cardsIsEven (revealedCards model.cards) then
+    -- Only one new card turned over
+    if cardsIsEven (revealedCards model.cards) then
+        None
+
+    else if notMatched model.cards selectedCard then
+        -- This is an incorrect try check if 3 in a row
+        case model.streak of
+            Incorrect tries ->
+                if modBy 3 (tries + 1) == 0 then
+                    MissedThreeInARow
+
+                else
+                    None
+
+            Correct _ ->
                 None
-
-            else if notMatched model.cards selectedCard then
-                -- This is an incorrect try check if 3 in a row
-                case model.streak of
-                    Incorrect tries ->
-                        if modBy 3 (tries + 1) == 0 then
-                            MissedThreeInARow
-
-                        else
-                            None
-
-                    Correct _ ->
-                        None
-
-            else
-            -- This is a correct try
-            -- Check if this is the final pair
-            if
-                List.length model.cards == (List.length (revealedCards model.cards) + 1)
-            then
-                MatchedAll
-
-            else if
-                modBy 3 (List.length (revealedCards model.cards) + 1)
-                    == 0
-                -- Check if total revealed multiple of 3
-            then
-                MatchedThree
-
-            else
-                None
-    in
-    if progressType == None then
-        ( False, "" )
 
     else
-        ( True
-        , Maybe.withDefault "" (List.head (getProgressSpeech progressType))
-        )
+    -- This is a correct try
+    -- Check if this is the final pair
+    if
+        List.length model.cards == (List.length (revealedCards model.cards) + 1)
+    then
+        MatchedAll
+
+    else if
+        modBy 3 (List.length (revealedCards model.cards) + 1)
+            == 0
+        -- Check if total revealed multiple of 3
+    then
+        MatchedThree
+
+    else
+        None
 
 
 updateSoundEffects : Card -> Model -> List SoundEffect
@@ -460,7 +486,7 @@ view model =
                 ]
             , if model.selectedCardSet.title /= "empty" then
                 case model.speechToast of
-                    Just ( artist, speech ) ->
+                    Just { artist, speech } ->
                         renderArtistSpeechToast ( artist, speech )
 
                     Nothing ->
