@@ -1,5 +1,8 @@
 module ArtistSpeech exposing (ProgressTrigger(..), getLevelHelp, getProgressSpeech, maxEasyCount, maxMediumCount)
 
+import Random
+import Random.List
+
 
 getLevelHelp : Int -> String
 getLevelHelp cardCount =
